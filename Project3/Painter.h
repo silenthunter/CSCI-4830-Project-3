@@ -18,6 +18,7 @@ private:
 	btSoftBodyWorldInfo worldInfo;
 	btSoftBody* brush;
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
+	int updateCounter;
 
 public:
 	Painter(void);

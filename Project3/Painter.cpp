@@ -17,6 +17,7 @@ Painter::Painter(void)
 	dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher,m_broadphase,m_solver,m_collisionConfiguration);
 	worldInfo.m_broadphase = m_broadphase;
 	worldInfo.m_dispatcher = m_dispatcher;
+	worldInfo.m_gravity.setValue(0, 0, 0);
 	dynamicsWorld->setGravity(btVector3(0,0,0));
 
 	loadObj("Meshes/Sphere2.obj", btVector3(0,0,0), 1.2f);
@@ -34,7 +35,7 @@ btSoftRigidDynamicsWorld* Painter::getDynamicsWorld()
 
 void Painter::update(double elapsed)
 {
-	dynamicsWorld->stepSimulation(.00001);
+	dynamicsWorld->stepSimulation(elapsed);
 	//brush->setVelocity(btVector3(0, 0, 0));
 	btSoftBody::tNodeArray& btNodes = brush->m_nodes;
 	double xAvg = 0, yAvg = 0, zAvg = 0;
@@ -48,7 +49,8 @@ void Painter::update(double elapsed)
 		zAvg += btNodes[i].m_x.z();
 	}
 
-	printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
+	if(updateCounter++ % 100 == 0)
+		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
 }
 
 void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scaling)
@@ -60,15 +62,14 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 	{
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 		brush->generateBendingConstraints(2);
-		//brush->randomizeConstraints();
+
+		brush->setTotalMass(30,true);
 
 		//trans.setIdentity();
 		//trans.setOrigin(position);
 		//brush->transform(trans);
-		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
-		brush->generateClusters(0);
-		brush->activate(false);
-		brush->setActivationState(DISABLE_SIMULATION);
+		//brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
+		brush->generateClusters(64);
 
 		dynamicsWorld->addSoftBody(brush);
 
