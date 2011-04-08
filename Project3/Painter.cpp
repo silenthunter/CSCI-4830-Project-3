@@ -17,8 +17,9 @@ Painter::Painter(void)
 	dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher,m_broadphase,m_solver,m_collisionConfiguration);
 	worldInfo.m_broadphase = m_broadphase;
 	worldInfo.m_dispatcher = m_dispatcher;
+	dynamicsWorld->setGravity(btVector3(0,0,0));
 
-	loadObj("Meshes/Sphere.obj", btVector3(0,0,-20), 1.2f);
+	loadObj("Meshes/Sphere2.obj", btVector3(0,0,0), 1.2f);
 }
 
 
@@ -33,8 +34,21 @@ btSoftRigidDynamicsWorld* Painter::getDynamicsWorld()
 
 void Painter::update(double elapsed)
 {
-	//brush->addForce(btVector3(0, .001, 0), 0);
-	dynamicsWorld->stepSimulation(elapsed);
+	dynamicsWorld->stepSimulation(.00001);
+	//brush->setVelocity(btVector3(0, 0, 0));
+	btSoftBody::tNodeArray& btNodes = brush->m_nodes;
+	double xAvg = 0, yAvg = 0, zAvg = 0;
+
+	int i;
+	for (i = 0; i < btNodes.size(); ++i)
+	{
+	   //printf("Soft body node %d: (%f, %f, %f)\n", i, btNodes[i].m_x.x(), btNodes[i].m_x.y(), btNodes[i].m_x.z());
+		xAvg += btNodes[i].m_x.x();
+		yAvg += btNodes[i].m_x.y();
+		zAvg += btNodes[i].m_x.z();
+	}
+
+	printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
 }
 
 void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scaling)
@@ -44,39 +58,17 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 
 	if(loadedWO)
 	{
-		btVector3* d = new btVector3[wo.mTriCount * 3];
-
-		btVector3 localScaling(scaling, scaling, scaling);
-		
-		int i;
-		for ( i = 0; i < wo.mTriCount;i++)
-		{
-			int index0 = wo.mIndices[i*3];
-			int index1 = wo.mIndices[i*3+1];
-			int index2 = wo.mIndices[i*3+2];
-
-			btVector3 vertex0(wo.mVertices[index0*3], wo.mVertices[index0*3+1],wo.mVertices[index0*3+2]);
-			btVector3 vertex1(wo.mVertices[index1*3], wo.mVertices[index1*3+1],wo.mVertices[index1*3+2]);
-			btVector3 vertex2(wo.mVertices[index2*3], wo.mVertices[index2*3+1],wo.mVertices[index2*3+2]);
-			
-			vertex0 *= localScaling;
-			vertex1 *= localScaling;
-			vertex2 *= localScaling;
-
-			d[i * 3] = vertex0;
-			d[i * 3 + 1] = vertex1;
-			d[i * 3 + 2] = vertex2;
-
-		}
-
-		brush = btSoftBodyHelpers::CreateFromConvexHull(worldInfo, d, wo.mTriCount * 3);
+		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 		brush->generateBendingConstraints(2);
 		//brush->randomizeConstraints();
-		btTransform trans;
-		trans.setIdentity();
-		trans.setOrigin(position);
-		brush->transform(trans);
-		//brush->generateClusters(64);
+
+		//trans.setIdentity();
+		//trans.setOrigin(position);
+		//brush->transform(trans);
+		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
+		brush->generateClusters(0);
+		brush->activate(false);
+		brush->setActivationState(DISABLE_SIMULATION);
 
 		dynamicsWorld->addSoftBody(brush);
 

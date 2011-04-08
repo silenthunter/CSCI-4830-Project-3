@@ -9,6 +9,7 @@
 #include <BulletSoftBody/btSoftBodyHelpers.h>
 #include "ConvexDecomposition\ConvexDecomposition.h"
 #include "ConvexDecomposition\cd_wavefront.h"
+#include <iostream>
 
 class Painter
 {

@@ -23,7 +23,9 @@ void main(int argc, char *argv[])
 	Painter paint;
 
 	//Debug Drawer
-	BtOgre::DebugDrawer* dbgdraw = new BtOgre::DebugDrawer(graphicsManager.GetRootSceneNode(), paint.getDynamicsWorld());
+	SceneNode* debugSN = graphicsManager.GetRootSceneNode()->createChildSceneNode("debugSN");
+	BtOgre::DebugDrawer* dbgdraw = new BtOgre::DebugDrawer(debugSN, paint.getDynamicsWorld());
+	debugSN->setPosition(0, 0, -20);
 	paint.getDynamicsWorld()->setDebugDrawer(dbgdraw);
 
 #pragma region Main Loop
@@ -35,6 +37,8 @@ void main(int argc, char *argv[])
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
 		dbgdraw->step();
+
+		debugSN->yaw(Degree(10 * elapsed));
 
 		paint.update(elapsed);
 	}
