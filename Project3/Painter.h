@@ -25,6 +25,7 @@ public:
 	~Painter(void);
 
 	void update(double elapsed);
+	void setAnchorPosition(btVector3 &pos);
 
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };

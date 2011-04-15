@@ -24,6 +24,7 @@ public:
 	GraphicsManager(void);
 	~GraphicsManager(void);
 
+	Ogre::RenderWindow* GetWindow();
 	void RenderFrame(Ogre::Real timeSinceLastFrame);
 	void init();
 	Ogre::SceneNode *GetRootSceneNode();

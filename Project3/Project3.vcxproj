@@ -37,7 +37,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
+    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
     <LibraryPath>$(Boost)\lib;.\lib;$(OgreLibDebug);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -48,7 +48,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain_d.lib;OIS_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)\dll\ $(OutDir)

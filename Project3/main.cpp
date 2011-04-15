@@ -1,4 +1,5 @@
 #include <Ogre.h>
+#include <OIS.h>
 #include "GraphicsManager.h"
 #include "GameTimer.h"
 #include "Painter.h"
@@ -28,9 +29,19 @@ void main(int argc, char *argv[])
 	debugSN->setPosition(0, 0, -20);
 	paint.getDynamicsWorld()->setDebugDrawer(dbgdraw);
 
+	//Allow for keyboard control
+	RenderWindow* ogreWindow = graphicsManager.GetWindow();
+	size_t hWnd = 0;
+	ogreWindow->getCustomAttribute("WINDOW", &hWnd);
+	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
+	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
+	char *keyStates = new char[512];
+
 #pragma region Main Loop
 	//Main Loop
 	GameTimer timer;
+	const float speed = 5.f;
+	btVector3 pos(0, 0, 0);
 	while(1)
 	{
 		double elapsed = timer.getElapsedTimeSec();
@@ -38,9 +49,24 @@ void main(int argc, char *argv[])
 		Ogre::WindowEventUtilities::messagePump();
 		dbgdraw->step();
 
-		debugSN->yaw(Degree(10 * elapsed));
+		m_Keyboard->capture();
 
+		if(m_Keyboard->isKeyDown(OIS::KC_W))
+			pos.setY(pos.y() + speed * elapsed);
+		if(m_Keyboard->isKeyDown(OIS::KC_S))
+			pos.setY(pos.y() - speed * elapsed);
+		if(m_Keyboard->isKeyDown(OIS::KC_A))
+			pos.setX(pos.x() - speed * elapsed);
+		if(m_Keyboard->isKeyDown(OIS::KC_D))
+			pos.setX(pos.x() + speed * elapsed);
+
+		//debugSN->yaw(Degree(10 * elapsed));
+
+		paint.setAnchorPosition(pos);
 		paint.update(elapsed);
+
+		//Save last key states
+		m_Keyboard->copyKeyStates(keyStates);
 	}
 #pragma endregion
 

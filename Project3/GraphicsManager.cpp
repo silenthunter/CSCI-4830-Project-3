@@ -116,3 +116,8 @@ Ogre::SceneManager* GraphicsManager::GetManager()
 {
 	return manager;
 }
+
+Ogre::RenderWindow* GraphicsManager::GetWindow()
+{
+	return window;
+}

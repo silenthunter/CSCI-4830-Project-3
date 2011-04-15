@@ -51,10 +51,6 @@ void Painter::update(double elapsed)
 		zAvg += btNodes[i].m_x.z();
 	}
 
-	if(updateCounter == 100)
-		brush->addForce(btVector3(0, 1000, 0), 0);//btNodes.size() - 1);
-	if(updateCounter == 1000)
-		brush->addForce(btVector3(0, -1000, 0), brush->m_nodes.size() - 1);
 	if(updateCounter++ % 100 == 0)
 	{
 		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
@@ -74,17 +70,24 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush->generateBendingConstraints(2);
 		brush->setTotalMass(30,true);
 		brush->generateClusters(64);
+		brush->setDeactivationTime(DISABLE_DEACTIVATION);
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
 		btSoftBody::Material  *mt = brush->appendMaterial();
-		mt->m_kAST = .01;
-		mt->m_kLST = .01;
-		mt->m_kVST = .01;
+		mt->m_kAST = 1;
+		mt->m_kLST = .3;
+		mt->m_kVST = .3;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
 
 		dynamicsWorld->addSoftBody(brush);
 
 	}
+}
+
+
+void Painter::setAnchorPosition(btVector3 &pos)
+{
+	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
 }
