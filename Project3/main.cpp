@@ -17,8 +17,8 @@ void main(int argc, char *argv[])
 	Ogre::Entity* ObjectEntity = graphicsManager.GetManager()->createEntity("ObjectEntity", "cube.mesh");
 	ObjectEntity->setMaterialName("Box");
 	Ogre::SceneNode* ObjectScene = graphicsManager.GetRootSceneNode()->createChildSceneNode("ObjectScene");
-	//ObjectScene->attachObject(ObjectEntity);
-	ObjectScene->setPosition(0, 0, -20);
+	ObjectScene->attachObject(ObjectEntity);
+	ObjectScene->setPosition(0, 5, -20);
 	ObjectScene->setScale(.05, .05, .05);
 
 	Painter paint;
@@ -28,6 +28,8 @@ void main(int argc, char *argv[])
 	BtOgre::DebugDrawer* dbgdraw = new BtOgre::DebugDrawer(debugSN, paint.getDynamicsWorld());
 	debugSN->setPosition(0, 0, -20);
 	paint.getDynamicsWorld()->setDebugDrawer(dbgdraw);
+
+	graphicsManager.InitBrushFromPainter(paint);
 
 	//Allow for keyboard control
 	RenderWindow* ogreWindow = graphicsManager.GetWindow();
@@ -60,10 +62,10 @@ void main(int argc, char *argv[])
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
 			pos.setX(pos.x() + speed * elapsed);
 
-		//debugSN->yaw(Degree(10 * elapsed));
-
+		//update brush and sync
 		paint.setAnchorPosition(pos);
 		paint.update(elapsed);
+		graphicsManager.updateOgreMeshFromBulletMesh(paint);
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);

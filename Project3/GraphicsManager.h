@@ -2,6 +2,16 @@
 
 #include <Ogre.h>
 #include <string>
+#include "Painter.h"
+
+#include <btBulletDynamicsCommon.h>
+#include <btBulletCollisionCommon.h>
+#include <BulletSoftBody\btSoftRigidDynamicsWorld.h>
+#include <BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.h>
+#include <BulletCollision\NarrowPhaseCollision\btGjkEpa2.h>
+#include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
+#include <BulletSoftBody/btSoftBodyHelpers.h>
+
 using namespace Ogre;
 using namespace std;
 
@@ -16,6 +26,7 @@ private:
 	Ogre::RenderWindow *window;
 	Ogre::SceneManager *manager;
 	Ogre::Viewport *vp;
+	Ogre::Entity *brush;
 
 	void SetUpCamera();
 	Ogre::RenderWindow* GetWindow(string name);
@@ -29,5 +40,7 @@ public:
 	void init();
 	Ogre::SceneNode *GetRootSceneNode();
 	Ogre::SceneManager *GetManager();
+	void InitBrushFromPainter(Painter &paint);
+	void updateOgreMeshFromBulletMesh(Painter &paint);
 };
 

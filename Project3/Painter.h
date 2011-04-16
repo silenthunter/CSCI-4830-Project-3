@@ -13,11 +13,14 @@
 
 class Painter
 {
+	friend class GraphicsManager;
 private:
 	btSoftRigidDynamicsWorld* dynamicsWorld;
 	btSoftBodyWorldInfo worldInfo;
 	btSoftBody* brush;
+	btRigidBody* target;
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
+	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
 
 public:
