@@ -49,7 +49,7 @@ void main(int argc, char *argv[])
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
-		dbgdraw->step();
+		//dbgdraw->step();
 
 		m_Keyboard->capture();
 
