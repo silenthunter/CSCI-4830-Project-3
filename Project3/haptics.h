@@ -3,8 +3,12 @@
 // Make sure this header is included only once 
 #ifndef HAPTICS_H 
 #define HAPTICS_H 
+#include <Ogre.h>
 #include <hdl/hdl.h> 
 #include <hdlu/hdlu.h> 
+
+using namespace Ogre;
+
 // Know which face is in contact 
 enum RS_Face { 
 FACE_NONE = -1, 
@@ -13,12 +17,13 @@ FACE_FAR, FACE_LEFT,
 FACE_TOP, FACE_BOTTOM, 
 FACE_DEFAULT, 
 FACE_LAST // reserved to allow iteration over faces 
-}; 
+};
+
 // Blocking values 
-const bool bNonBlocking = false; 
+const bool bNonBlocking = true; 
 
+const bool bBlocking = false; 
 
-const bool bBlocking = true; 
 class HapticsClass 
 { 
 // Define callback functions as friends 

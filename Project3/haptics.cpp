@@ -1,7 +1,9 @@
-#include "PhysicalExamApplication.h"
+//#include "PhysicalExamApplication.h"
 #include "haptics.h" 
 #include <windows.h> 
-#include <math.h> 
+#include <math.h>
+#include <boost/thread.hpp>
+
 // Continuous servo callback function 
 HDLServoOpExitCode ContactCB(void* pUserData) 
 { 
@@ -17,6 +19,7 @@ HDLServoOpExitCode ContactCB(void* pUserData)
 	// Make sure to continue processing 
 	return HDL_SERVOOP_CONTINUE; 
 } 
+
 // On-demand synchronization callback function 
 HDLServoOpExitCode GetStateCB(void* pUserData) 
 { 
@@ -30,6 +33,7 @@ HDLServoOpExitCode GetStateCB(void* pUserData)
 	// bBlocking = true 
 	return HDL_SERVOOP_EXIT; 
 } 
+
 // Constructor--just make sure needed variables are initialized. 
 HapticsClass::HapticsClass() 
 : m_lastFace(FACE_NONE), 
@@ -38,19 +42,20 @@ m_servoOp(HDL_INVALID_HANDLE),
 m_cubeEdgeLength(1), 
 m_cubeStiffness(1), 
 m_inited(false) 
-{	m_forceServo[0] = 0;
+{	
+	m_forceServo[0] = 0;
 	m_forceServo[1] = 0;
 	m_forceServo[2] = 0;
 	for (int i = 0; i < 3; i++) 
 		m_positionServo[i] = 0; 
 } 
+
 // Destructor--make sure devices are uninited. 
 HapticsClass::~HapticsClass() 
-
-
 { 
 	uninit(); 
 } 
+
 void HapticsClass::init(double a_cubeSize, double a_stiffness) 
 { 
 	m_cubeEdgeLength = a_cubeSize; 
@@ -111,6 +116,7 @@ void HapticsClass::init(double a_cubeSize, double a_stiffness)
 	
 	m_inited = true; 
 } 
+
 // uninit() undoes the setup in reverse order. Note the setting of 
 // handles. This prevents a problem if uninit() is called 
 // more than once. 
@@ -129,6 +135,7 @@ void HapticsClass::uninit()
 	} 
 	m_inited = false; 
 } 
+
 // This is a simple function for testing error returns. A production 
 // application would need to be more sophisticated than this. 
 void HapticsClass::testHDLError(const char* str) 
@@ -140,6 +147,7 @@ void HapticsClass::testHDLError(const char* str)
 		abort(); 
 	} 
 } 
+
 // This is the entry point used by the application to synchronize 
 // data access to the device. Using this function eliminates the 
 // need for the application to worry about threads. 
@@ -147,12 +155,14 @@ void HapticsClass::synchFromServo()
 { 
 	hdlCreateServoOp(GetStateCB, this, bBlocking); 
 } 
+
 // GetStateCB calls this function to do the actual data movement. 
 void HapticsClass::synch() 
 { 
 	// m_positionApp is set in cubeContact(). 
 	m_buttonApp = m_buttonServo; 
 } 
+
 // A utility function to handle matrix multiplication. A production application 
 // would have a full vector/matrix math library at its disposal, but this is a 
 // simplified example. 
@@ -171,13 +181,13 @@ void HapticsClass::vecMultMatrix(double srcVec[3], double mat[16], double dstVec
 	+ mat[10] * srcVec[2] 
 	+ mat[14]; 
 } 
-
 
 // Here is where the heavy calculations are done. This function is 
 // called from ContactCB to calculate the forces based on current 
 // cursor position and cube dimensions. A simple spring model is 
 // used. 
-void HapticsClass::forceDirection(Vector3 unitVector, double magnitude){
+void HapticsClass::forceDirection(Vector3 unitVector, double magnitude)
+{
 	unitVectorGraphic = unitVector;
 	//Vector3 AVGUNITVECTOR;
 	
@@ -200,7 +210,9 @@ void HapticsClass::forceDirection(Vector3 unitVector, double magnitude){
 	//	}
 	//}
 	magnitudeVectorGraphic = magnitude;
-	return;}
+	return;
+}
+
 void HapticsClass::cubeContact() 
 { 
 	// Convert from device coordinates to application coordinates. 
@@ -220,6 +232,7 @@ void HapticsClass::cubeContact()
 		m_forceServo[2] = filter * m_forceServo[2] + ( (1-filter) * unitVectorGraphic[2] * pow(magnitudeVectorGraphic,2) * 100);//  * pow(5,magnitudeVectorGraphic);
 
  }
+
 // Interface function to get current position 
 void HapticsClass::getPosition(double pos[3]) 
 { 
@@ -227,6 +240,7 @@ void HapticsClass::getPosition(double pos[3])
 	pos[1] = m_positionApp[1]; 
 	pos[2] = m_positionApp[2]; 
 } 
+
 // Interface function to get button state. Only one button is used 
 // in this application. 
 bool HapticsClass::isButtonDown() 
@@ -235,6 +249,7 @@ bool HapticsClass::isButtonDown()
 
 	
 } 
+
 // For this application, the only device status of interest is the 
 // calibration status. A different application may want to test for 
 // HDAL_UNINITIALIZED and/or HDAL_SERVO_NOT_STARTED 

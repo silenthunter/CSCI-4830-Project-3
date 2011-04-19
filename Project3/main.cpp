@@ -1,8 +1,10 @@
 #include <Ogre.h>
 #include "GraphicsManager.h"
 #include "GameTimer.h"
+#include "haptics.h"
 
 GraphicsManager graphicsManager;
+HapticsClass hap;
 
 void main(int argc, char *argv[])
 {
@@ -15,6 +17,9 @@ void main(int argc, char *argv[])
 	ObjectScene->setPosition(0, 0, -20);
 	ObjectScene->setScale(.05, .05, .05);
 
+	//Haptics stuff
+	hap.init(24, 10);
+
 #pragma region Main Loop
 	//Main Loop
 	GameTimer timer;
@@ -23,6 +28,7 @@ void main(int argc, char *argv[])
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
+		hap.synchFromServo();
 	}
 #pragma endregion
 
