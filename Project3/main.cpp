@@ -44,12 +44,15 @@ void main(int argc, char *argv[])
 	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
+	hap.synchFromServo();
+	double startPos[3];
+	hap.getPosition(startPos);
 
 #pragma region Main Loop
 	//Main Loop
 	GameTimer timer;
 	const float speed = 5.f;
-	btVector3 pos(0, 0, 0);
+	//btVector3 pos(0, 0, 0);
 	while(1)
 	{
 		double elapsed = timer.getElapsedTimeSec();
@@ -60,24 +63,28 @@ void main(int argc, char *argv[])
 
 		m_Keyboard->capture();
 
-		if(m_Keyboard->isKeyDown(OIS::KC_W))
+		/*if(m_Keyboard->isKeyDown(OIS::KC_W))
 			pos.setY(pos.y() + speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_S))
 			pos.setY(pos.y() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_A))
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
-			pos.setX(pos.x() + speed * elapsed);
+			pos.setX(pos.x() + speed * elapsed);*/
 
 		//update brush and sync
-		paint.setAnchorPosition(pos);
+		double pos[3];
+		hap.getPosition(pos);
+		paint.setAnchorPosition(btVector3(pos[0] - startPos[0], pos[1] - startPos[1], pos[2] - startPos[2]));
+		//paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
 
 		//Haptic forces from Bullet
-		btVector3 force = paint.getForceDirection();
+		btVector3 force = -paint.getForceDirection();
 		Vector3 forceOgre(force.x(), force.y(), force.z());
-		hap.forceDirection(forceOgre.normalisedCopy(), log(forceOgre.length()));
+		double forceMag = forceOgre.length() / 1000;//log(forceOgre.length()) * 100;
+		hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);

@@ -20,9 +20,9 @@ FACE_LAST // reserved to allow iteration over faces
 };
 
 // Blocking values 
-const bool bNonBlocking = true; 
+const bool bNonBlocking = false; 
 
-const bool bBlocking = false; 
+const bool bBlocking = true; 
 
 class HapticsClass 
 { 
