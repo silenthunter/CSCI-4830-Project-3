@@ -58,6 +58,8 @@ void Painter::update(double elapsed)
 		if(brush->m_links[i].m_n[1] == &(brush->m_nodes[brush->m_nodes.size() - 1]))
 			vec += brush->m_links[i].m_c3;
 
+	forceDirection = vec;
+
 	if(updateCounter++ % 50 == 0)
 	{
 		printf("Average position (%f, %f, %f)\n", vec.x(),vec.y(), vec.z());
@@ -149,4 +151,9 @@ void Painter::loadTarget(const char* fileName, btVector3 &position, btScalar sca
 void Painter::setAnchorPosition(btVector3 &pos)
 {
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
+}
+
+btVector3 Painter::getForceDirection()
+{
+	return forceDirection;
 }

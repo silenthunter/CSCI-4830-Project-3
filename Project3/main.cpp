@@ -8,6 +8,7 @@
 #include "BtOgrePG.h"
 #include "BtOgreGP.h"
 #include "BtOgreExtras.h"
+#include <math.h>
 
 GraphicsManager graphicsManager;
 HapticsClass hap;
@@ -72,6 +73,11 @@ void main(int argc, char *argv[])
 		paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
+
+		//Haptic forces from Bullet
+		btVector3 force = paint.getForceDirection();
+		Vector3 forceOgre(force.x(), force.y(), force.z());
+		hap.forceDirection(forceOgre.normalisedCopy(), log(forceOgre.length()));
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);
