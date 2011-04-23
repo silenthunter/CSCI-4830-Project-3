@@ -11,6 +11,7 @@
 #include <BulletCollision\NarrowPhaseCollision\btGjkEpa2.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 #include <BulletSoftBody/btSoftBodyHelpers.h>
+#include <OgreHardwarePixelBuffer.h>
 
 using namespace Ogre;
 using namespace std;
@@ -27,6 +28,9 @@ private:
 	Ogre::SceneManager *manager;
 	Ogre::Viewport *vp;
 	Ogre::Entity *brush;
+	Ogre::Entity *canvas;
+	Ogre::TexturePtr texture;
+	HardwarePixelBufferSharedPtr hardwarePtr;
 
 	void SetUpCamera();
 	Ogre::RenderWindow* GetWindow(string name);
@@ -42,5 +46,7 @@ public:
 	Ogre::SceneManager *GetManager();
 	void InitBrushFromPainter(Painter &paint);
 	void updateOgreMeshFromBulletMesh(Painter &paint);
+	void applyPaint();
+	void loadCanvasObject(string fileName);
 };
 

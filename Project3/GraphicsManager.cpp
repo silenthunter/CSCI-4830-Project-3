@@ -5,7 +5,6 @@ GraphicsManager::GraphicsManager(void)
 {
 }
 
-
 GraphicsManager::~GraphicsManager(void)
 {
 }
@@ -47,6 +46,44 @@ void GraphicsManager::init()
 	SetUpCamera();
 
 	//return root;
+}
+
+void GraphicsManager::loadCanvasObject(string fileName)
+{
+	canvas = manager->createEntity("ObjectEntity", fileName);
+	//canvas->setMaterialName("Box");
+	Ogre::SceneNode* ObjectScene = root_sn->createChildSceneNode("ObjectScene");
+	ObjectScene->attachObject(canvas);
+	ObjectScene->setPosition(0, 5, -20);
+	ObjectScene->setScale(.05, .05, .05);
+
+	texture = TextureManager::getSingleton().createManual("Canvas", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+															TEX_TYPE_2D, 256, 256, 
+															0, PF_BYTE_BGRA, TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+
+	hardwarePtr = texture->getBuffer();
+	MaterialPtr ptr = MaterialManager::getSingleton().create("DynamicTextureMaterial", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ptr->getTechnique(0)->getPass(0)->createTextureUnitState("Canvas");
+	canvas->setMaterial(ptr);
+
+	//Initialize texture
+	hardwarePtr->lock(HardwareBuffer::HBL_NORMAL);
+	const PixelBox& pixelBox = hardwarePtr->getCurrentLock();
+
+	uint8* pDest = static_cast<uint8*>(pixelBox.data);
+
+	// Fill in some pixel data. This will give a semi-transparent blue,
+	// but this is of course dependent on the chosen pixel format.
+	for (size_t j = 0; j < 256; j++)
+		for(size_t i = 0; i < 256; i++)
+		{
+			*pDest++ = i; // B
+			*pDest++ =   j; // G
+			*pDest++ =   0; // R
+			*pDest++ = 127; // A
+		}
+
+		hardwarePtr->unlock();
 }
 
 Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
@@ -284,4 +321,25 @@ void GraphicsManager::updateOgreMeshFromBulletMesh(Painter &paint)
         }
         vbuf->unlock();
     //}
+}
+
+void GraphicsManager::applyPaint()
+{
+	hardwarePtr->lock(HardwareBuffer::HBL_NORMAL);
+	const PixelBox& pixelBox = hardwarePtr->getCurrentLock();
+
+	uint8* pDest = static_cast<uint8*>(pixelBox.data);
+
+	// Fill in some pixel data. This will give a semi-transparent blue,
+	// but this is of course dependent on the chosen pixel format.
+	for (size_t j = 0; j < 256; j++)
+		for(size_t i = 0; i < 256; i++)
+		{
+			(*pDest++)++; // B
+			(*pDest++)++; // G
+			//(*pDest++)++; // R
+			*pDest++ = 127; // A
+		}
+
+		hardwarePtr->unlock();
 }
