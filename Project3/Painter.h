@@ -10,6 +10,7 @@
 #include "ConvexDecomposition\ConvexDecomposition.h"
 #include "ConvexDecomposition\cd_wavefront.h"
 #include <iostream>
+#include <list>
 
 class Painter
 {
@@ -22,6 +23,7 @@ private:
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
+	void Painter::CollisionFeedback();
 
 public:
 	Painter(void);
@@ -29,6 +31,7 @@ public:
 
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
+	std::list<btVector3> getCollisions();
 
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };

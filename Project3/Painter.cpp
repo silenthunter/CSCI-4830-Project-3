@@ -17,8 +17,8 @@ Painter::Painter(void)
 	dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher,m_broadphase,m_solver,m_collisionConfiguration);
 	worldInfo.m_broadphase = m_broadphase;
 	worldInfo.m_dispatcher = m_dispatcher;
-	worldInfo.m_sparsesdf.Initialize();
 	worldInfo.m_gravity.setValue(0, 0, 0);
+	worldInfo.m_sparsesdf.Initialize();
 	dynamicsWorld->setGravity(btVector3(0,0,0));
 
 	updateCounter = 0;
@@ -26,7 +26,6 @@ Painter::Painter(void)
 	loadObj("Meshes/Sphere.obj", btVector3(0,0,0), 1.2f);
 	loadTarget("Meshes/cube.obj", btVector3(0,5,0), 2.5f);
 }
-
 
 Painter::~Painter(void)
 {
@@ -74,6 +73,7 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush->generateClusters(64);
 		brush->getCollisionShape()->setMargin(0.3);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
+		brush->m_cfg.piterations = 5;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
@@ -132,4 +132,17 @@ void Painter::loadTarget(const char* fileName, btVector3 &position, btScalar sca
 void Painter::setAnchorPosition(btVector3 &pos)
 {
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
+}
+
+std::list<btVector3> Painter::getCollisions()
+{
+	std::list<btVector3> retn;
+
+	for(int i = 0; i < brush->m_rcontacts.size(); i++)
+	{
+		btVector3 pos = brush->m_rcontacts[i].m_node->m_x;
+		retn.push_back(pos);
+	}
+
+	return retn;
 }
