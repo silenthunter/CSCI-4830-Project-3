@@ -7,15 +7,20 @@
 #include <BulletCollision\NarrowPhaseCollision\btGjkEpa2.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 #include <BulletSoftBody/btSoftBodyHelpers.h>
+#include <BulletSoftBody/btSoftRigidCollisionAlgorithm.h>
 #include "ConvexDecomposition\ConvexDecomposition.h"
 #include "ConvexDecomposition\cd_wavefront.h"
 #include <iostream>
 #include <list>
 
+struct MyRayResultCallback;
+
 class Painter
 {
 	friend class GraphicsManager;
+	friend struct MyRayResultCallback;
 private:
+
 	btSoftRigidDynamicsWorld* dynamicsWorld;
 	btSoftBodyWorldInfo worldInfo;
 	btSoftBody* brush;
@@ -23,7 +28,7 @@ private:
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
-	void Painter::CollisionFeedback();
+	std::list<int> triIndex;
 
 public:
 	Painter(void);
@@ -31,8 +36,20 @@ public:
 
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
-	std::list<btVector3> getCollisions();
+	std::list<int> getCollisions();
 
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };
 
+struct MyRayResultCallback : public btCollisionWorld::RayResultCallback
+{
+	MyRayResultCallback(const btVector3& rayFromWorld,const btVector3& rayToWorld, Painter* painter, btCollisionObject *me)
+		: m_rayFromWorld(rayFromWorld), m_rayToWorld(rayToWorld), paint(painter), self(me){}
+	btVector3   m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
+	btVector3   m_rayToWorld;
+	Painter *paint;
+	btCollisionObject *self;
+
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace);
+	virtual bool needsCollision (btBroadphaseProxy *proxy0) const;
+};

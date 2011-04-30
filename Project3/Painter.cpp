@@ -56,6 +56,12 @@ void Painter::update(double elapsed)
 	{
 		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
 		printf("FPS : %f\n", 1000 * elapsed);
+
+		if(getCollisions().size() > 0)
+		{
+		int vec = getCollisions().front();
+		printf("index (%d)\n", vec);
+		}
 	}
 }
 
@@ -69,11 +75,17 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 
 		brush->generateBendingConstraints(2);
-		brush->setTotalMass(30,true);
+		brush->setTotalMass(30);
 		brush->generateClusters(64);
-		brush->getCollisionShape()->setMargin(0.3);
+		brush->getCollisionShape()->setMargin(.1);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
-		brush->m_cfg.piterations = 5;
+		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS |
+		btSoftBody::fCollision::CL_SS;
+		//btSoftBody::fCollision::CL_SELF;
+
+		//brush->m_cfg.kDP = .1;
+		brush->m_cfg.kCHR = 0;
+		brush->m_cfg.piterations = 10;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
@@ -82,7 +94,10 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		mt->m_kLST = .3;
 		mt->m_kVST = .3;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
+		{
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
+			//brush->setMass(i, 10);
+		}
 
 		dynamicsWorld->addSoftBody(brush);
 
@@ -134,15 +149,32 @@ void Painter::setAnchorPosition(btVector3 &pos)
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
 }
 
-std::list<btVector3> Painter::getCollisions()
+std::list<int> Painter::getCollisions()
 {
-	std::list<btVector3> retn;
+	//std::list<btVector3> retn;
+	triIndex.clear();
 
 	for(int i = 0; i < brush->m_rcontacts.size(); i++)
 	{
-		btVector3 pos = brush->m_rcontacts[i].m_node->m_x;
-		retn.push_back(pos);
+		btSoftBody::Node *node = brush->m_rcontacts[i].m_node;
+		btVector3 pos = node->m_x;;
+		//retn.push_back(pos);
+		btVector3 secondPos = pos + brush->m_rcontacts[i].m_cti.m_normal * -10;
+		MyRayResultCallback rayCallback(pos, secondPos, this, brush);
+		dynamicsWorld->rayTest(pos, secondPos, rayCallback);
 	}
 
-	return retn;
+	return triIndex;
 }
+
+btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
+{
+	if(rayResult.m_collisionObject == self || rayResult.m_localShapeInfo == NULL) return rayResult.m_hitFraction;
+	paint->triIndex.push_back(rayResult.m_localShapeInfo->m_triangleIndex);
+    return rayResult.m_hitFraction;
+}
+
+bool MyRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) const
+{
+	return true;
+};
