@@ -15,6 +15,12 @@
 
 struct MyRayResultCallback;
 
+struct ContactResult
+{
+	int triangleIndex;
+	btVector3 collisionPt;
+};
+
 class Painter
 {
 	friend class GraphicsManager;
@@ -28,7 +34,6 @@ private:
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
-	std::list<int> triIndex;
 
 public:
 	Painter(void);
@@ -36,19 +41,22 @@ public:
 
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
-	std::list<int> getCollisions();
+	std::list<ContactResult> getCollisions();
 
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };
 
-struct MyRayResultCallback : public btCollisionWorld::RayResultCallback
+struct MyRayResultCallback : public btCollisionWorld::ClosestRayResultCallback
 {
 	MyRayResultCallback(const btVector3& rayFromWorld,const btVector3& rayToWorld, Painter* painter, btCollisionObject *me)
-		: m_rayFromWorld(rayFromWorld), m_rayToWorld(rayToWorld), paint(painter), self(me){}
+		: m_rayFromWorld(rayFromWorld), m_rayToWorld(rayToWorld), paint(painter), self(me), ClosestRayResultCallback(rayFromWorld, rayToWorld){}
 	btVector3   m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
 	btVector3   m_rayToWorld;
 	Painter *paint;
 	btCollisionObject *self;
+	
+	btVector3 contactPt;
+	int triIndex;
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace);
 	virtual bool needsCollision (btBroadphaseProxy *proxy0) const;

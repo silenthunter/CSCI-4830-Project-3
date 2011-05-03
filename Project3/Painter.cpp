@@ -59,8 +59,8 @@ void Painter::update(double elapsed)
 
 		if(getCollisions().size() > 0)
 		{
-		int vec = getCollisions().front();
-		printf("index (%d)\n", vec);
+		//int vec = getCollisions().front();
+		//printf("index (%d)\n", vec);
 		}
 	}
 }
@@ -149,28 +149,35 @@ void Painter::setAnchorPosition(btVector3 &pos)
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
 }
 
-std::list<int> Painter::getCollisions()
+std::list<ContactResult> Painter::getCollisions()
 {
-	//std::list<btVector3> retn;
-	triIndex.clear();
+	std::list<ContactResult> retn;
+	//triIndex.clear();
 
 	for(int i = 0; i < brush->m_rcontacts.size(); i++)
 	{
 		btSoftBody::Node *node = brush->m_rcontacts[i].m_node;
-		btVector3 pos = node->m_x;;
+		btVector3 pos = node->m_x;
 		//retn.push_back(pos);
 		btVector3 secondPos = pos + brush->m_rcontacts[i].m_cti.m_normal * -10;
 		MyRayResultCallback rayCallback(pos, secondPos, this, brush);
 		dynamicsWorld->rayTest(pos, secondPos, rayCallback);
+
+		ContactResult NewContact;
+		NewContact.collisionPt = rayCallback.contactPt;
+		NewContact.triangleIndex = rayCallback.triIndex;
+		retn.push_back(NewContact);
 	}
 
-	return triIndex;
+	return retn;
 }
 
 btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 {
+	ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 	if(rayResult.m_collisionObject == self || rayResult.m_localShapeInfo == NULL) return rayResult.m_hitFraction;
-	paint->triIndex.push_back(rayResult.m_localShapeInfo->m_triangleIndex);
+	triIndex =rayResult.m_localShapeInfo->m_triangleIndex;
+	contactPt = this->m_hitPointWorld;
     return rayResult.m_hitFraction;
 }
 

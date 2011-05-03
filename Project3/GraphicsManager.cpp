@@ -48,8 +48,24 @@ void GraphicsManager::init()
 	//return root;
 }
 
-void GraphicsManager::loadCanvasObject(string fileName)
+void GraphicsManager::loadCanvasObject(string fileName, string WOname)
 {
+
+#pragma region Load WaveObject mesh file
+	//Load the mesh first and initialize vertex and index arrays
+	ConvexDecomposition::WavefrontObj wo;
+	int loadedWO = wo.loadObj(("Meshes/" + WOname).c_str());
+
+	if(loadedWO)
+	{
+		vertices = new Vector3[wo.mVertexCount * 3];
+		indices = new int[wo.mTriCount];
+
+		for(int i = 0; i < wo.mVertexCount * 3; i++) vertices[i]  = Vector3(wo.mVertices[i * 3], wo.mVertices[i * 3 + 1], wo.mVertices[i * 3 + 2]);
+		for(int i = 0; i < wo.mTriCount; i++) indices[i] = wo.mIndices[i];
+	}
+
+#pragma endregion
 	canvas = manager->createEntity("ObjectEntity", fileName);
 	//canvas->setMaterialName("Box");
 	Ogre::SceneNode* ObjectScene = root_sn->createChildSceneNode("ObjectScene");
@@ -323,23 +339,78 @@ void GraphicsManager::updateOgreMeshFromBulletMesh(Painter &paint)
     //}
 }
 
-void GraphicsManager::applyPaint()
+void GraphicsManager::applyPaint(Painter &paint)
 {
 	hardwarePtr->lock(HardwareBuffer::HBL_NORMAL);
 	const PixelBox& pixelBox = hardwarePtr->getCurrentLock();
 
 	uint8* pDest = static_cast<uint8*>(pixelBox.data);
 
+
+	std::list<ContactResult> cResults = paint.getCollisions();
+
+	std::list<ContactResult>::iterator itr = cResults.begin();
+	for(int i = 0; i < cResults.size(); i++, itr++)
+	{
+		Vector3 p1 = vertices[itr->triangleIndex * 3];
+		Vector3 p2 = vertices[itr->triangleIndex * 3 + 1];
+		Vector3 p3 = vertices[itr->triangleIndex * 3 + 2];
+		Vector3 p(itr->collisionPt.x(), itr->collisionPt.y(), itr->collisionPt.z());
+		Vector3 bcc = GetBaryCentricCoords(p1, p2, p3, p);
+
+		//This is the UV coordinate
+		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
+		Vector2 T = T1*bcc.x + T2*bcc.y + T3*bcc.z;
+		pDest[(int)(256 *  T.x * 4 + 256 * 256 * T.y * 4)] = 255;//Math should be checked
+	}
+
 	// Fill in some pixel data. This will give a semi-transparent blue,
 	// but this is of course dependent on the chosen pixel format.
-	for (size_t j = 0; j < 256; j++)
+	/*for (size_t j = 0; j < 256; j++)
 		for(size_t i = 0; i < 256; i++)
 		{
 			(*pDest++)++; // B
 			(*pDest++)++; // G
 			//(*pDest++)++; // R
 			*pDest++ = 127; // A
-		}
+		}*/
 
-		hardwarePtr->unlock();
+	hardwarePtr->unlock();
+}
+
+Vector3 GraphicsManager::GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p)
+{
+	    //Determines the barycentric coordinates of the collision for this triangle (used this as ref: http://www.farinhansford.com/dianne/teaching/cse470/materials/BarycentricCoords.pdf)
+             //p1 = vertices[indices[i]];   //Triangle corners
+             //p2 = vertices[indices[i+1]];
+             //p3 = vertices[indices[i+2]];
+             //p = ray.getPoint(hit.second);   //Intersection point
+
+             Vector3 v = p2 - p1;
+             Vector3 w = p3 - p1;
+             Vector3 u = v.crossProduct(w);
+             Real A = u.length();      //u
+
+             v = p2 - p;
+             w = p3 - p;
+             u = v.crossProduct(w);
+             Real A1 = u.length();      //u1
+
+             v = p - p1;
+             w = p3 - p1;
+             u = v.crossProduct(w);
+             Real A2 = u.length();      //u2
+
+             //v = p2 - p1;
+             //w = p - p1;
+             //u = v.crossProduct(w);
+             //Real A3 = u.length();      //u3
+
+             //we should check dot products of u.u1, u.u2, u.u3 and use the signs of those as the signs of A1/A, A2/A, A3/A below, but since we know the ray intersects the triangle we know the 3 barycentric coordinates are all positive
+             Vector3 barycentricCoords;
+             barycentricCoords.x = A1/A;
+             barycentricCoords.y = A2/A;
+             barycentricCoords.z = 1.0f - barycentricCoords.x - barycentricCoords.y;
+
+			 return barycentricCoords;
 }
