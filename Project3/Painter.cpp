@@ -177,7 +177,7 @@ btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& 
 	ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 	if(rayResult.m_collisionObject == self || rayResult.m_localShapeInfo == NULL) return rayResult.m_hitFraction;
 	triIndex =rayResult.m_localShapeInfo->m_triangleIndex;
-	contactPt = this->m_hitPointWorld;
+	contactPt = this->m_hitPointWorld - this->m_collisionObject->getWorldTransform().getOrigin();
     return rayResult.m_hitFraction;
 }
 

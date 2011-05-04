@@ -546,6 +546,7 @@ public:
 	float        mPos[3];
 	float        mNormal[3];
 	float        mTexel[2];
+	int mTexelIdx;
 };
 
 
@@ -554,6 +555,7 @@ class GeometryInterface
 public:
 
   virtual void NodeTriangle(const GeometryVertex *v1,const GeometryVertex *v2,const GeometryVertex *v3) {}
+  virtual void AddTexel(float t1, float t2){}
 
   virtual ~GeometryInterface () {}
 };
@@ -630,6 +632,7 @@ void OBJ::getVertex(GeometryVertex &v,const char *face) const
   if ( texel )
   {
     int tindex = atoi( texel+1) - 1;
+	v.mTexelIdx = tindex;
 
     if ( tindex >=0 && tindex < (int)(mTexels.size()/2) )
     {
@@ -696,6 +699,7 @@ int OBJ::ParseLine(int lineno,int argc,const char **argv)  // return TRUE to con
         float ty = (float) atof( argv[2] );
         mTexels.push_back(tx);
         mTexels.push_back(ty);
+		mCallback->AddTexel(tx, ty);
       }
 	//  else if ( stricmp(argv[0],"vn") == 0 && argc == 4 )
 
@@ -790,19 +794,32 @@ public:
 		return vcount;
 	}
 
+	virtual void AddTexel(float t1, float t2)
+	{
+		mTexels.push_back(t1);
+		mTexels.push_back(t2);
+	}
+
 	virtual void NodeTriangle(const GeometryVertex *v1,const GeometryVertex *v2,const GeometryVertex *v3)
 	{
 		mIndices.push_back( getIndex(v1->mPos) );
 		mIndices.push_back( getIndex(v2->mPos) );
 		mIndices.push_back( getIndex(v3->mPos) );
+		mIndicesToTexel.push_back( v1->mTexelIdx );
+		mIndicesToTexel.push_back( v2->mTexelIdx );
+		mIndicesToTexel.push_back( v3->mTexelIdx );
 	}
 
   const FloatVector& GetVertices(void) const { return mVertices; };
+  const FloatVector& GetTexels(void) const { return mTexels; };
   const IntVector& GetIndices(void) const { return mIndices; };
+  const IntVector& GetIndicesToTexel(void) const { return mIndicesToTexel; };
 
 private:
   FloatVector     mVertices;
+  FloatVector     mTexels;
   IntVector		    mIndices;
+  IntVector		    mIndicesToTexel;
 };
 
 
@@ -842,6 +859,9 @@ unsigned int WavefrontObj::loadObj(const char *fname) // load a wavefront obj re
 
 	const FloatVector &vlist = bm.GetVertices();
 	const IntVector &indices = bm.GetIndices();
+	const FloatVector &tlist = bm.GetTexels();
+	const IntVector &tIndex = bm.GetIndicesToTexel();
+
 	if ( vlist.size() )
 	{
 		mVertexCount = vlist.size()/3;
@@ -850,6 +870,14 @@ unsigned int WavefrontObj::loadObj(const char *fname) // load a wavefront obj re
 		mTriCount = indices.size()/3;
 		mIndices = new int[mTriCount*3*sizeof(int)];
 		memcpy(mIndices, &indices[0], sizeof(int)*mTriCount*3);
+		mUVCount = tlist.size() / 2;
+		if(mUVCount > 0)
+		{
+			mUVs = new float[mUVCount * 2];
+			memcpy(mUVs, &tlist[0], sizeof(float) * mUVCount * 2);
+			mIndicesToUVidx = new int[mTriCount * 3];
+			memcpy(mIndicesToUVidx, &tIndex[0], sizeof(int) * mTriCount * 3);
+		}
 		ret = mTriCount;
 	}
 

@@ -32,6 +32,8 @@ private:
 	Ogre::TexturePtr texture;
 	Vector3 *vertices;
 	int *indices;
+	int *UVindices;
+	Vector2 *UVs;
 	HardwarePixelBufferSharedPtr hardwarePtr;
 
 	void SetUpCamera();
@@ -49,7 +51,7 @@ public:
 	void InitBrushFromPainter(Painter &paint);
 	void updateOgreMeshFromBulletMesh(Painter &paint);
 	void applyPaint(Painter &paint);
-	void loadCanvasObject(string fileName, string WOname);
+	void loadCanvasObject(string fileName, string WOname, float scale);
 	Vector3 GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p);
 };
 

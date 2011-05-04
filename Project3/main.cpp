@@ -14,7 +14,7 @@ void main(int argc, char *argv[])
 {
 	graphicsManager.init();
 
-	graphicsManager.loadCanvasObject("cube.mesh", "cube.obj");
+	graphicsManager.loadCanvasObject("cube.mesh", "cube.obj", 2.5f);
 
 	Painter paint;
 
@@ -46,6 +46,8 @@ void main(int argc, char *argv[])
 		Ogre::WindowEventUtilities::messagePump();
 		dbgdraw->step();
 		graphicsManager.applyPaint(paint);
+
+		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(30) * elapsed);
 
 		m_Keyboard->capture();
 

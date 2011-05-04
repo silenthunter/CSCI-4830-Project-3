@@ -48,7 +48,7 @@ void GraphicsManager::init()
 	//return root;
 }
 
-void GraphicsManager::loadCanvasObject(string fileName, string WOname)
+void GraphicsManager::loadCanvasObject(string fileName, string WOname, float scale)
 {
 
 #pragma region Load WaveObject mesh file
@@ -59,10 +59,14 @@ void GraphicsManager::loadCanvasObject(string fileName, string WOname)
 	if(loadedWO)
 	{
 		vertices = new Vector3[wo.mVertexCount * 3];
-		indices = new int[wo.mTriCount];
+		indices = new int[wo.mTriCount * 3];
+		UVindices = new int[wo.mTriCount * 3];
+		UVs = new Vector2[wo.mUVCount];
 
-		for(int i = 0; i < wo.mVertexCount * 3; i++) vertices[i]  = Vector3(wo.mVertices[i * 3], wo.mVertices[i * 3 + 1], wo.mVertices[i * 3 + 2]);
-		for(int i = 0; i < wo.mTriCount; i++) indices[i] = wo.mIndices[i];
+		for(int i = 0; i < wo.mVertexCount * 3; i++) vertices[i]  = Vector3(wo.mVertices[i * 3], wo.mVertices[i * 3 + 1], wo.mVertices[i * 3 + 2]) * scale;
+		for(int i = 0; i < wo.mTriCount * 3; i++) indices[i] = wo.mIndices[i];
+		for(int i = 0; i < wo.mUVCount; i++) UVs[i] = Vector2(wo.mUVs[i * 2], wo.mUVs[i * 2 + 1]);
+		for(int i = 0; i < wo.mTriCount * 3; i++) {UVindices[i] = wo.mIndicesToUVidx[i]; cout << UVindices[i] << endl;};
 	}
 
 #pragma endregion
@@ -71,7 +75,7 @@ void GraphicsManager::loadCanvasObject(string fileName, string WOname)
 	Ogre::SceneNode* ObjectScene = root_sn->createChildSceneNode("ObjectScene");
 	ObjectScene->attachObject(canvas);
 	ObjectScene->setPosition(0, 5, -20);
-	ObjectScene->setScale(.05, .05, .05);
+	ObjectScene->setScale(2.5, 2.5, 2.5);
 
 	texture = TextureManager::getSingleton().createManual("Canvas", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 															TEX_TYPE_2D, 256, 256, 
@@ -93,13 +97,13 @@ void GraphicsManager::loadCanvasObject(string fileName, string WOname)
 	for (size_t j = 0; j < 256; j++)
 		for(size_t i = 0; i < 256; i++)
 		{
-			*pDest++ = i; // B
-			*pDest++ =   j; // G
-			*pDest++ =   0; // R
-			*pDest++ = 127; // A
+			*pDest++ = 255; // B
+			*pDest++ =   255; // G
+			*pDest++ =   255; // R
+			*pDest++ = 255; // A
 		}
 
-		hardwarePtr->unlock();
+	hardwarePtr->unlock();
 }
 
 Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
@@ -352,16 +356,22 @@ void GraphicsManager::applyPaint(Painter &paint)
 	std::list<ContactResult>::iterator itr = cResults.begin();
 	for(int i = 0; i < cResults.size(); i++, itr++)
 	{
-		Vector3 p1 = vertices[itr->triangleIndex * 3];
-		Vector3 p2 = vertices[itr->triangleIndex * 3 + 1];
-		Vector3 p3 = vertices[itr->triangleIndex * 3 + 2];
+		if(itr->triangleIndex < 0) continue; //Error Check
+		int idx = itr->triangleIndex;
+		Vector3 p1 = vertices[indices[idx * 3]];
+		Vector3 p2 = vertices[indices[idx * 3 + 1]];
+		Vector3 p3 = vertices[indices[idx * 3 + 2]];
 		Vector3 p(itr->collisionPt.x(), itr->collisionPt.y(), itr->collisionPt.z());
 		Vector3 bcc = GetBaryCentricCoords(p1, p2, p3, p);
+
+		Vector2 T1 = UVs[UVindices[idx * 3]];
+		Vector2 T2 = UVs[UVindices[idx * 3 + 1]];
+		Vector2 T3 = UVs[UVindices[idx * 3 + 2]];
 
 		//This is the UV coordinate
 		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
 		Vector2 T = T1*bcc.x + T2*bcc.y + T3*bcc.z;
-		pDest[(int)(256 *  T.x * 4 + 256 * 256 * T.y * 4)] = 255;//Math should be checked
+		pDest[(int)(256 *  T.x * 4 + 256 * 256 * T.y * 4)] = 0;//Math should be checked
 	}
 
 	// Fill in some pixel data. This will give a semi-transparent blue,
