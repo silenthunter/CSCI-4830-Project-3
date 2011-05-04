@@ -34,6 +34,8 @@ void main(int argc, char *argv[])
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
 
+	graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-90));
+
 #pragma region Main Loop
 	//Main Loop
 	GameTimer timer;
@@ -46,8 +48,6 @@ void main(int argc, char *argv[])
 		Ogre::WindowEventUtilities::messagePump();
 		dbgdraw->step();
 		graphicsManager.applyPaint(paint);
-
-		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(30) * elapsed);
 
 		m_Keyboard->capture();
 

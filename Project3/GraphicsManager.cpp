@@ -371,7 +371,9 @@ void GraphicsManager::applyPaint(Painter &paint)
 		//This is the UV coordinate
 		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
 		Vector2 T = T1*bcc.x + T2*bcc.y + T3*bcc.z;
-		pDest[(int)(256 *  T.x * 4 + 256 * 256 * T.y * 4)] = 0;//Math should be checked
+		int pixelIdx = (int)(256 * T.x + 256 * 256 * T.y) * 4;//Math should be checked
+		pDest[pixelIdx] = 0;
+		pDest[pixelIdx + 1] = 0;
 	}
 
 	// Fill in some pixel data. This will give a semi-transparent blue,
