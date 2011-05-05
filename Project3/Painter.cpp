@@ -1,6 +1,5 @@
 #include "Painter.h"
 
-
 Painter::Painter(void)
 {
 	btCollisionConfiguration* m_collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
@@ -157,9 +156,9 @@ std::list<ContactResult> Painter::getCollisions()
 	for(int i = 0; i < brush->m_rcontacts.size(); i++)
 	{
 		btSoftBody::Node *node = brush->m_rcontacts[i].m_node;
-		btVector3 pos = node->m_x;
+		btVector3 pos = brush->m_nodes[brush->m_nodes.size() - 1].m_x;
 		//retn.push_back(pos);
-		btVector3 secondPos = pos + brush->m_rcontacts[i].m_cti.m_normal * -10;
+		btVector3 secondPos = node->m_x - pos;
 		MyRayResultCallback rayCallback(pos, secondPos, this, brush);
 		dynamicsWorld->rayTest(pos, secondPos, rayCallback);
 

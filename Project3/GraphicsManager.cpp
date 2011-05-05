@@ -141,7 +141,7 @@ void GraphicsManager::SetUpCamera()
 	c->setAutoAspectRatio(true);
 
 	//TODO: Remove temporary settings
-	c->setPosition(Ogre::Vector3(0, 0, 0));
+	c->setPosition(Ogre::Vector3(5, 0, 0));
 	//c->lookAt(8,3,0);
 	/*Ogre::Light *l = manager->createLight("light1");
 	root_sn->attachObject(l);
@@ -152,6 +152,9 @@ void GraphicsManager::SetUpCamera()
 	c_sn = manager->createSceneNode("main_camera");
 	c_sn->setPosition(0, 3, 0);
 	//c_sn->attachObject(c);
+
+	//c->lookAt(0, 0, 0);
+	c->yaw(Degree(30));
 
 	root_sn->addChild(player);
 	player->addChild(c_sn);
@@ -354,6 +357,7 @@ void GraphicsManager::applyPaint(Painter &paint)
 	std::list<ContactResult> cResults = paint.getCollisions();
 
 	std::list<ContactResult>::iterator itr = cResults.begin();
+
 	for(int i = 0; i < cResults.size(); i++, itr++)
 	{
 		if(itr->triangleIndex < 0) continue; //Error Check
@@ -362,6 +366,7 @@ void GraphicsManager::applyPaint(Painter &paint)
 		Vector3 p2 = vertices[indices[idx * 3 + 1]];
 		Vector3 p3 = vertices[indices[idx * 3 + 2]];
 		Vector3 p(itr->collisionPt.x(), itr->collisionPt.y(), itr->collisionPt.z());
+		//Vector3 p(-0.269135, 0.662939, 2.5);
 		Vector3 bcc = GetBaryCentricCoords(p1, p2, p3, p);
 
 		Vector2 T1 = UVs[UVindices[idx * 3]];
@@ -371,7 +376,17 @@ void GraphicsManager::applyPaint(Painter &paint)
 		//This is the UV coordinate
 		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
 		Vector2 T = T1*bcc.x + T2*bcc.y + T3*bcc.z;
-		int pixelIdx = (int)(256 * T.x + 256 * 256 * T.y) * 4;//Math should be checked
+
+		//printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y, bcc.z);
+
+		T.y -= 1;
+		if(T.y < 0) T.y = -T.y;
+
+		//printf("T: %f.8, %f.8\nT1: %f.8, %f.8\nT2: %f.8, %f.8\nT3: %f.8, %f.8\n", T.x, T.y, T1.x, T1.y, T2.x, T2.y, T3.x, T3.y);
+
+		int pixelIdx = (int)(256 * T.x + 256 * (int)(256 * T.y)) * 4;//Math should be checked
+
+		printf("pixelIdx: %d\n", pixelIdx);
 		pDest[pixelIdx] = 0;
 		pDest[pixelIdx + 1] = 0;
 	}

@@ -41,6 +41,7 @@ void main(int argc, char *argv[])
 	GameTimer timer;
 	const float speed = 5.f;
 	btVector3 pos(0, 0, 0);
+
 	while(1)
 	{
 		double elapsed = timer.getElapsedTimeSec();
