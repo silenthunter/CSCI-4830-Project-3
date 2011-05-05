@@ -52,6 +52,7 @@ void main(int argc, char *argv[])
 	//Main Loop
 	GameTimer timer;
 	const float speed = 5.f;
+	float rotation = 0.f;
 	//btVector3 pos(0, 0, 0);
 	while(1)
 	{
@@ -71,14 +72,27 @@ void main(int argc, char *argv[])
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
 			pos.setX(pos.x() + speed * elapsed);*/
+		if(m_Keyboard->isKeyDown(OIS::KC_E))
+			rotation += speed * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_Q))
+			rotation -= speed * elapsed;
 
 		//update brush and sync
 		double pos[3];
 		hap.getPosition(pos);
+		
+		Vector3 ogPos(pos[0], pos[1], pos[2]);
+		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
+		ogPos = q * ogPos;
+		pos[0] = ogPos.x;
+		pos[1] = ogPos.y;
+		pos[2] = ogPos.z;
+
 		paint.setAnchorPosition(btVector3(pos[0] - startPos[0], pos[1] - startPos[1], pos[2] - startPos[2]));
 		//paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
+		graphicsManager.GetRootSceneNode()->setOrientation(q);
 
 		//Haptic forces from Bullet
 		btVector3 force = -paint.getForceDirection();
