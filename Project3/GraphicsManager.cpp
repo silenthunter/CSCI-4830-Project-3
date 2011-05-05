@@ -1,6 +1,5 @@
 #include "GraphicsManager.h"
 
-
 GraphicsManager::GraphicsManager(void)
 {
 }
@@ -78,7 +77,7 @@ void GraphicsManager::loadCanvasObject(string fileName, string WOname, float sca
 	ObjectScene->setScale(2.5, 2.5, 2.5);
 
 	texture = TextureManager::getSingleton().createManual("Canvas", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-															TEX_TYPE_2D, 256, 256, 
+															TEX_TYPE_2D, 512, 512, 
 															0, PF_BYTE_BGRA, TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
 	hardwarePtr = texture->getBuffer();
@@ -94,8 +93,8 @@ void GraphicsManager::loadCanvasObject(string fileName, string WOname, float sca
 
 	// Fill in some pixel data. This will give a semi-transparent blue,
 	// but this is of course dependent on the chosen pixel format.
-	for (size_t j = 0; j < 256; j++)
-		for(size_t i = 0; i < 256; i++)
+	for (size_t j = 0; j < 512; j++)
+		for(size_t i = 0; i < 512; i++)
 		{
 			*pDest++ = 255; // B
 			*pDest++ =   255; // G
@@ -366,25 +365,62 @@ void GraphicsManager::applyPaint(Painter &paint)
 		Vector3 p2 = vertices[indices[idx * 3 + 1]];
 		Vector3 p3 = vertices[indices[idx * 3 + 2]];
 		Vector3 p(itr->collisionPt.x(), itr->collisionPt.y(), itr->collisionPt.z());
-		//Vector3 p(-0.269135, 0.662939, 2.5);
+
+		/*
+		p1 = Vector3(1, 0, 0);
+		p2 = Vector3(0, 1, 0);
+		p3 = Vector3(0, 0, 1);
+		p = Vector3(1/3, 1/3, 1/3);
+		*/
+
 		Vector3 bcc = GetBaryCentricCoords(p1, p2, p3, p);
 
 		Vector2 T1 = UVs[UVindices[idx * 3]];
 		Vector2 T2 = UVs[UVindices[idx * 3 + 1]];
 		Vector2 T3 = UVs[UVindices[idx * 3 + 2]];
 
+		/*
+		printf("p1: %f.8, %f.8, %f.8\n", p1.x, p1.y, p1.z);
+		printf("p2: %f.8, %f.8, %f.8\n", p2.x, p2.y, p2.z);
+		printf("p3: %f.8, %f.8, %f.8\n", p3.x, p3.y, p3.z);
+		printf("p: %f.8, %f.8, %f.8\n", p.x, p.y, p.z);
+		printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y, bcc.z);
+
+		T1 = Vector2(0, 0);
+		T2 = Vector2(0.5, 1);
+		T3 = Vector2(1, 0);
+		*/
+
 		//This is the UV coordinate
 		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
-		Vector2 T = T1*bcc.x + T2*bcc.y + T3*bcc.z;
 
-		//printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y, bcc.z);
+		Vector2 aTemp(p1.x, p1.y);
+		Vector2 bTemp(p2.x, p2.y);
+		Vector2 cTemp(p3.x, p3.y);
+		Vector2 T = aTemp * bcc.x + bTemp * bcc.y + cTemp * bcc.z;
+		Vector2 pTemp(p.x, p.y);
+		Vector2 rTemp = T - pTemp;
+		printf("T - pTemp:%f.8, %f.8\n", rTemp.x, rTemp.y);
 
+		//Vector3 T = bcc.x * p1 + bcc.y * p2 + bcc.z * p3;
+		//T.x = bcc.x * p1.x + bcc.y * p2.x + bcc.z * p3.x;
+		//T.y = bcc.x * p1.y + bcc.y * p2.y + bcc.z * p3.y;
+
+		printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y);
+
+		printf("T: %f.8, %f.8\n", T.x, T.y);
 		T.y -= 1;
 		if(T.y < 0) T.y = -T.y;
+		Vector2 T4;
+		T4.x = (T1.x + T2.x + T3.x) / 3;
+		T4.y = (T1.y + T2.y + T3.y) / 3;
+
+		printf("T: %f.8, %f.8\n", T.x, T.y);
+		printf("T4: %f.8, %f.8\n", T4.x, T4.y);
 
 		//printf("T: %f.8, %f.8\nT1: %f.8, %f.8\nT2: %f.8, %f.8\nT3: %f.8, %f.8\n", T.x, T.y, T1.x, T1.y, T2.x, T2.y, T3.x, T3.y);
 
-		int pixelIdx = (int)(256 * T.x + 256 * (int)(256 * T.y)) * 4;//Math should be checked
+		int pixelIdx = (((int)(512 * T.x) + 512 * (int)(512 * T.y)))* 4;//Math should be checked
 
 		printf("pixelIdx: %d\n", pixelIdx);
 		pDest[pixelIdx] = 0;
@@ -407,37 +443,69 @@ void GraphicsManager::applyPaint(Painter &paint)
 
 Vector3 GraphicsManager::GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p)
 {
-	    //Determines the barycentric coordinates of the collision for this triangle (used this as ref: http://www.farinhansford.com/dianne/teaching/cse470/materials/BarycentricCoords.pdf)
-             //p1 = vertices[indices[i]];   //Triangle corners
-             //p2 = vertices[indices[i+1]];
-             //p3 = vertices[indices[i+2]];
-             //p = ray.getPoint(hit.second);   //Intersection point
+	//Determines the barycentric coordinates of the collision for this triangle (used this as ref: http://www.farinhansford.com/dianne/teaching/cse470/materials/BarycentricCoords.pdf)
+    //p1 = vertices[indices[i]];   //Triangle corners
+    //p2 = vertices[indices[i+1]];
+    //p3 = vertices[indices[i+2]];
+    //p = ray.getPoint(hit.second);   //Intersection point
 
-             Vector3 v = p2 - p1;
-             Vector3 w = p3 - p1;
-             Vector3 u = v.crossProduct(w);
-             Real A = u.length();      //u
+	/*
+    Vector3 v = p2 - p1;
+    Vector3 w = p3 - p1;
+    Vector3 u = v.crossProduct(w);
+    Real A = u.length();      //u
 
-             v = p2 - p;
-             w = p3 - p;
-             u = v.crossProduct(w);
-             Real A1 = u.length();      //u1
+    v = p2 - p;
+    w = p3 - p;
+    u = v.crossProduct(w);
+    Real A1 = u.length();      //u1
 
-             v = p - p1;
-             w = p3 - p1;
-             u = v.crossProduct(w);
-             Real A2 = u.length();      //u2
+    v = p - p1;
+    w = p3 - p1;
+    u = v.crossProduct(w);
+    Real A2 = u.length();      //u2
+	*/
 
-             //v = p2 - p1;
-             //w = p - p1;
-             //u = v.crossProduct(w);
-             //Real A3 = u.length();      //u3
+    //v = p2 - p1;
+    //w = p - p1;
+    //u = v.crossProduct(w);
+    //Real A3 = u.length();      //u3
 
-             //we should check dot products of u.u1, u.u2, u.u3 and use the signs of those as the signs of A1/A, A2/A, A3/A below, but since we know the ray intersects the triangle we know the 3 barycentric coordinates are all positive
-             Vector3 barycentricCoords;
-             barycentricCoords.x = A1/A;
-             barycentricCoords.y = A2/A;
-             barycentricCoords.z = 1.0f - barycentricCoords.x - barycentricCoords.y;
+    //we should check dot products of u.u1, u.u2, u.u3 and use the signs of those as the signs of A1/A, A2/A, A3/A below, but since we know the ray intersects the triangle we know the 3 barycentric coordinates are all positive
+    /*
+	Vector3 barycentricCoords;
+    barycentricCoords.x = A1/A;
+    barycentricCoords.y = A2/A;
+    barycentricCoords.z = 1.0f - barycentricCoords.x - barycentricCoords.y;
 
-			 return barycentricCoords;
+	return barycentricCoords;
+	*/
+
+	/*
+	Vector&3 BC;
+	BC.x = ((p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y)) / ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+	BC.y = ((p3.y - p1.y) * (p.x - p3.x) + (p1.x - p3.x) * (p.y - p3.y)) / ((p3.y - p1.y) * (p2.x - p3.x) + (p1.x - p3.x) * (p2.y - p3.y));
+	BC.z = 1 - BC.x - BC.y;
+
+	return BC;
+	*/
+	
+	// Compute the normal of the triangle
+	Vector3 temp1 = p2 - p1;
+	Vector3 temp2 = p3 - p1;
+	Vector3 N = ((temp1).crossProduct(temp2));
+	N.normalise();
+	// Compute twice area of triangle ABC
+	float AreaABC = (temp1.crossProduct(temp2)).dotProduct(N);
+	// Compute a
+	float AreaPBC = ((p2 - p).crossProduct(p3 - p)).dotProduct(N);
+	float a = AreaPBC / AreaABC;
+	// Compute b
+	float AreaPCA = ((p3 - p).crossProduct(p1 - p)).dotProduct(N);
+	float b = AreaPCA / AreaABC;
+	// Compute c
+	float c = 1.0f - a - b;
+
+	Vector3 BC(a, b, c);
+	return BC;
 }

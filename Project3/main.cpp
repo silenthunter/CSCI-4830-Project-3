@@ -10,6 +10,80 @@
 
 GraphicsManager graphicsManager;
 
+bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
+{
+	if(m_Keyboard->isKeyDown(OIS::KC_R))
+	{
+		cBool = 0;
+		(*cValue) = 0;
+	}
+	else if(m_Keyboard->isKeyDown(OIS::KC_G))
+	{
+		cBool = 1;
+		(*cValue) = 0;
+	}
+	else if(m_Keyboard->isKeyDown(OIS::KC_B))
+	{
+		cBool = 2;
+		(*cValue) = 0;
+	}
+	else
+	{
+		(*cValue) *= 10;
+		if(m_Keyboard->isKeyDown(OIS::KC_1))
+		{
+			(*cValue) += 1;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_2))
+		{
+			(*cValue) += 2;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_3))
+		{
+			(*cValue) += 3;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_4))
+		{
+			(*cValue) += 4;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_5))
+		{
+			(*cValue) += 5;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_6))
+		{
+			(*cValue) += 6;	
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_7))
+		{
+			(*cValue) += 7;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_8))
+		{
+			(*cValue) += 8;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_9))
+		{
+			(*cValue) += 9;
+		}
+		else if(m_Keyboard->isKeyDown(OIS::KC_RETURN))
+		{
+			if((*cValue) > 255)
+			{
+				(*cValue) = 0;
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			(*cValue) = 0;
+		}
+	}
+	if((*cValue) > 255) (*cValue) = 0;
+	return false;
+}
+
 void main(int argc, char *argv[])
 {
 	graphicsManager.init();
@@ -42,6 +116,9 @@ void main(int argc, char *argv[])
 	const float speed = 5.f;
 	btVector3 pos(0, 0, 0);
 
+	int cValue = 0;
+	int cBool = -1;
+
 	while(1)
 	{
 		double elapsed = timer.getElapsedTimeSec();
@@ -60,6 +137,10 @@ void main(int argc, char *argv[])
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
 			pos.setX(pos.x() + speed * elapsed);
+		if(colorInput(m_Keyboard, &cValue, cBool) == true)
+		{
+			//Feed (*cValue) in here to a color according to cBool
+		}
 
 		//update brush and sync
 		paint.setAnchorPosition(pos);

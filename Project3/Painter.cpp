@@ -1,4 +1,5 @@
 #include "Painter.h"
+#include <fstream>
 
 Painter::Painter(void)
 {
@@ -153,6 +154,9 @@ std::list<ContactResult> Painter::getCollisions()
 	std::list<ContactResult> retn;
 	//triIndex.clear();
 
+	std::ofstream myfile;
+	myfile.open("somefile.txt");
+
 	for(int i = 0; i < brush->m_rcontacts.size(); i++)
 	{
 		btSoftBody::Node *node = brush->m_rcontacts[i].m_node;
@@ -166,7 +170,10 @@ std::list<ContactResult> Painter::getCollisions()
 		NewContact.collisionPt = rayCallback.contactPt;
 		NewContact.triangleIndex = rayCallback.triIndex;
 		retn.push_back(NewContact);
+
+		myfile << NewContact.collisionPt.getX() << " " << NewContact.collisionPt.getY() << " " << NewContact.collisionPt.getZ() << "\n";
 	}
+	myfile.close();
 
 	return retn;
 }
