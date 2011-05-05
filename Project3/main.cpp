@@ -2,13 +2,16 @@
 #include <OIS.h>
 #include "GraphicsManager.h"
 #include "GameTimer.h"
+#include "haptics.h"
 #include "Painter.h"
 
 #include "BtOgrePG.h"
 #include "BtOgreGP.h"
 #include "BtOgreExtras.h"
+#include <math.h>
 
 GraphicsManager graphicsManager;
+HapticsClass hap;
 
 bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
 {
@@ -90,6 +93,9 @@ void main(int argc, char *argv[])
 
 	graphicsManager.loadCanvasObject("cube.mesh", "cube.obj", 2.5f);
 
+	//Haptics stuff
+	hap.init(24, 10);
+
 	Painter paint;
 
 	//Debug Drawer
@@ -107,6 +113,9 @@ void main(int argc, char *argv[])
 	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
+	hap.synchFromServo();
+	double startPos[3];
+	hap.getPosition(startPos);
 
 	graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-90));
 
@@ -114,8 +123,8 @@ void main(int argc, char *argv[])
 	//Main Loop
 	GameTimer timer;
 	const float speed = 5.f;
-	btVector3 pos(0, 0, 0);
-
+	float rotation = 0.f;
+	//btVector3 pos(0, 0, 0);
 	int cValue = 0;
 	int cBool = -1;
 
@@ -124,28 +133,51 @@ void main(int argc, char *argv[])
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
-		dbgdraw->step();
+		hap.synchFromServo();
 		graphicsManager.applyPaint(paint);
+		//dbgdraw->step();
 
 		m_Keyboard->capture();
 
-		if(m_Keyboard->isKeyDown(OIS::KC_W))
+		/*if(m_Keyboard->isKeyDown(OIS::KC_W))
 			pos.setY(pos.y() + speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_S))
 			pos.setY(pos.y() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_A))
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
-			pos.setX(pos.x() + speed * elapsed);
+			pos.setX(pos.x() + speed * elapsed);*/
 		if(colorInput(m_Keyboard, &cValue, cBool) == true)
 		{
 			//Feed (*cValue) in here to a color according to cBool
 		}
+		if(m_Keyboard->isKeyDown(OIS::KC_E))
+			rotation += speed * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_Q))
+			rotation -= speed * elapsed;
 
 		//update brush and sync
-		paint.setAnchorPosition(pos);
+		double pos[3];
+		hap.getPosition(pos);
+		
+		Vector3 ogPos(pos[0], pos[1], pos[2]);
+		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
+		ogPos = q * ogPos;
+		pos[0] = ogPos.x;
+		pos[1] = ogPos.y;
+		pos[2] = ogPos.z;
+
+		paint.setAnchorPosition(btVector3(pos[0] - startPos[0], pos[1] - startPos[1], pos[2] - startPos[2]));
+		//paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
+		graphicsManager.GetRootSceneNode()->setOrientation(q);
+
+		//Haptic forces from Bullet
+		btVector3 force = -paint.getForceDirection();
+		Vector3 forceOgre(force.x(), force.y(), force.z());
+		double forceMag = forceOgre.length() / 1000;//log(forceOgre.length()) * 100;
+		hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);

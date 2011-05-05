@@ -44,6 +44,7 @@ void Painter::update(double elapsed)
 	double xAvg = 0, yAvg = 0, zAvg = 0;
 
 	int i;
+	btVector3 vec(0, 0, 0);
 	for (i = 0; i < btNodes.size(); ++i)
 	{
 	   //printf("Soft body node %d: (%f, %f, %f)\n", i, btNodes[i].m_x.x(), btNodes[i].m_x.y(), btNodes[i].m_x.z());
@@ -52,9 +53,16 @@ void Painter::update(double elapsed)
 		zAvg += btNodes[i].m_x.z();
 	}
 
-	if(updateCounter++ % 100 == 0)
+	for(i = 0; i < brush->m_links.size(); i++)
+		if(brush->m_links[i].m_n[1] == &(brush->m_nodes[brush->m_nodes.size() - 1]))
+			vec += brush->m_links[i].m_c3;
+
+	forceDirection = vec;
+
+	if(updateCounter++ % 50 == 0)
 	{
-		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
+		printf("Average position (%f, %f, %f)\n", vec.x(),vec.y(), vec.z());
+		//printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
 		printf("FPS : %f\n", 1000 * elapsed);
 
 		if(getCollisions().size() > 0)
@@ -65,6 +73,8 @@ void Painter::update(double elapsed)
 	}
 }
 
+//http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=6665
+//From my bullet physics post
 void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scaling)
 {
 	ConvexDecomposition::WavefrontObj wo;
@@ -75,7 +85,6 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 
 		brush->generateBendingConstraints(2);
-		brush->setTotalMass(30);
 		brush->generateClusters(64);
 		brush->getCollisionShape()->setMargin(.1);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
@@ -83,20 +92,19 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		btSoftBody::fCollision::CL_SS;
 		//btSoftBody::fCollision::CL_SELF;
 
-		//brush->m_cfg.kDP = .1;
+		brush->m_cfg.kDP = .1;
 		brush->m_cfg.kCHR = 0;
 		brush->m_cfg.piterations = 10;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
 		btSoftBody::Material  *mt = brush->appendMaterial();
-		mt->m_kAST = .9;
-		mt->m_kLST = .3;
-		mt->m_kVST = .3;
+		mt->m_kAST = 1;
+		mt->m_kLST = .03;
+		mt->m_kVST = .03;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
 		{
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
-			//brush->setMass(i, 10);
 		}
 
 		dynamicsWorld->addSoftBody(brush);
@@ -147,6 +155,11 @@ void Painter::loadTarget(const char* fileName, btVector3 &position, btScalar sca
 void Painter::setAnchorPosition(btVector3 &pos)
 {
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
+}
+
+btVector3 Painter::getForceDirection()
+{
+	return forceDirection;
 }
 
 std::list<ContactResult> Painter::getCollisions()

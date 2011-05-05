@@ -31,6 +31,7 @@ private:
 	btSoftBodyWorldInfo worldInfo;
 	btSoftBody* brush;
 	btRigidBody* target;
+	btVector3 forceDirection;
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
@@ -42,7 +43,7 @@ public:
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
 	std::list<ContactResult> getCollisions();
-
+	btVector3 getForceDirection();
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };
 
