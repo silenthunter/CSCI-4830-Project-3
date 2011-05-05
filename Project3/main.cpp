@@ -124,12 +124,16 @@ void main(int argc, char *argv[])
 	GameTimer timer;
 	const float speed = 5.f;
 	float rotation = 0.f;
+	const float NovintScale = 4.f;
 	//btVector3 pos(0, 0, 0);
 	int cValue = 0;
 	int cBool = -1;
+	double lastForceMag = 0;
+	int cnt = 0;
 
 	while(1)
 	{
+		cnt++;
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
@@ -151,10 +155,10 @@ void main(int argc, char *argv[])
 		{
 			//Feed (*cValue) in here to a color according to cBool
 		}
-		if(m_Keyboard->isKeyDown(OIS::KC_E))
-			rotation += speed * elapsed;
-		if(m_Keyboard->isKeyDown(OIS::KC_Q))
-			rotation -= speed * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_D))
+			rotation += 60 * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_A))
+			rotation -= 60 * elapsed;
 
 		//update brush and sync
 		double pos[3];
@@ -162,22 +166,29 @@ void main(int argc, char *argv[])
 		
 		Vector3 ogPos(pos[0], pos[1], pos[2]);
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
+		ogPos *= NovintScale;
 		ogPos = q * ogPos;
 		pos[0] = ogPos.x;
 		pos[1] = ogPos.y;
 		pos[2] = ogPos.z;
 
-		paint.setAnchorPosition(btVector3(pos[0] - startPos[0], pos[1] - startPos[1], pos[2] - startPos[2]));
+		paint.setAnchorPosition(btVector3(pos[0] - startPos[0] * NovintScale, pos[1] - startPos[1] * NovintScale, pos[2] - startPos[2] * NovintScale));
 		//paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
-		graphicsManager.GetRootSceneNode()->setOrientation(q);
+		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
 
 		//Haptic forces from Bullet
 		btVector3 force = -paint.getForceDirection();
 		Vector3 forceOgre(force.x(), force.y(), force.z());
-		double forceMag = forceOgre.length() / 1000;//log(forceOgre.length()) * 100;
-		hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
+		double forceMag = forceOgre.length() / 10000 * (paint.isContacting() ? 5.5 : 3);//log(forceOgre.length()) * 100;
+
+		/*double diff = forceMag - lastForceMag;
+		forceMag = lastForceMag + diff * .01;
+		lastForceMag = forceMag;*/
+
+		if(cnt > 25)
+			hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);

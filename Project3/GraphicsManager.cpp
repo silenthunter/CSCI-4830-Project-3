@@ -20,7 +20,7 @@ void GraphicsManager::init()
 	string resourcesFile = "resources.cfg";
 
 	root = new Ogre::Root(pluginsFile, configFile, logFile);
-	root->setRenderSystem(root->getRenderSystemByName("OpenGL Rendering Subsystem"));
+	root->setRenderSystem(root->getRenderSystemByName("Direct3D9 Rendering Subsystem"));
 	root->initialise(false);
 
 	ConfigFile cf;
@@ -111,7 +111,7 @@ Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 	nvpl["parentWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 	nvpl["externalWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 
-	window = root->createRenderWindow(name, 0, 0, false, &nvpl);
+	window = root->createRenderWindow(name, 1920, 1080, true, &nvpl);
 	window->setVisible(true);
 	if(render_windows.size() == 0)
 		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
@@ -119,7 +119,7 @@ Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 	render_windows[name] = window;
 	window->setDeactivateOnFocusChange(false);
 
-	window->resize(800,600);
+	//window->resize(800,600);
 
 	return window;
 }
@@ -140,7 +140,7 @@ void GraphicsManager::SetUpCamera()
 	c->setAutoAspectRatio(true);
 
 	//TODO: Remove temporary settings
-	c->setPosition(Ogre::Vector3(5, 0, 0));
+	c->setPosition(Ogre::Vector3(0, 0, 0));
 	//c->lookAt(8,3,0);
 	/*Ogre::Light *l = manager->createLight("light1");
 	root_sn->attachObject(l);
@@ -153,7 +153,7 @@ void GraphicsManager::SetUpCamera()
 	//c_sn->attachObject(c);
 
 	//c->lookAt(0, 0, 0);
-	c->yaw(Degree(30));
+	//c->yaw(Degree(30));
 
 	root_sn->addChild(player);
 	player->addChild(c_sn);
@@ -400,31 +400,31 @@ void GraphicsManager::applyPaint(Painter &paint)
 		Vector2 T = aTemp * bcc.x + bTemp * bcc.y + cTemp * bcc.z;
 		Vector2 pTemp(p.x, p.y);
 		Vector2 rTemp = T - pTemp;
-		printf("T - pTemp:%f.8, %f.8\n", rTemp.x, rTemp.y);
+		//printf("T - pTemp:%f.8, %f.8\n", rTemp.x, rTemp.y);
 
 		//Vector3 T = bcc.x * p1 + bcc.y * p2 + bcc.z * p3;
 		//T.x = bcc.x * p1.x + bcc.y * p2.x + bcc.z * p3.x;
 		//T.y = bcc.x * p1.y + bcc.y * p2.y + bcc.z * p3.y;
 
-		printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y);
+		//printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y);
 
-		printf("T: %f.8, %f.8\n", T.x, T.y);
+		//printf("T: %f.8, %f.8\n", T.x, T.y);
 		T.y -= 1;
 		if(T.y < 0) T.y = -T.y;
 		Vector2 T4;
 		T4.x = (T1.x + T2.x + T3.x) / 3;
 		T4.y = (T1.y + T2.y + T3.y) / 3;
 
-		printf("T: %f.8, %f.8\n", T.x, T.y);
-		printf("T4: %f.8, %f.8\n", T4.x, T4.y);
+		//printf("T: %f.8, %f.8\n", T.x, T.y);
+		//printf("T4: %f.8, %f.8\n", T4.x, T4.y);
 
 		//printf("T: %f.8, %f.8\nT1: %f.8, %f.8\nT2: %f.8, %f.8\nT3: %f.8, %f.8\n", T.x, T.y, T1.x, T1.y, T2.x, T2.y, T3.x, T3.y);
 
 		int pixelIdx = (((int)(512 * T.x) + 512 * (int)(512 * T.y)))* 4;//Math should be checked
 
-		printf("pixelIdx: %d\n", pixelIdx);
-		pDest[pixelIdx] = 0;
-		pDest[pixelIdx + 1] = 0;
+		//printf("pixelIdx: %d\n", pixelIdx);
+		//pDest[pixelIdx] = 0;
+		//pDest[pixelIdx + 1] = 0;
 	}
 
 	// Fill in some pixel data. This will give a semi-transparent blue,

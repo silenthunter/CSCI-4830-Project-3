@@ -57,13 +57,15 @@ void Painter::update(double elapsed)
 		if(brush->m_links[i].m_n[1] == &(brush->m_nodes[brush->m_nodes.size() - 1]))
 			vec += brush->m_links[i].m_c3;
 
+	//lastForceDirection = forceDirection;
+	//forceDirection = lastForceDirection.lerp(vec, .5);
 	forceDirection = vec;
 
-	if(updateCounter++ % 50 == 0)
+	if(updateCounter++ % 25 == 0)
 	{
 		printf("Average position (%f, %f, %f)\n", vec.x(),vec.y(), vec.z());
 		//printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
-		printf("FPS : %f\n", 1000 * elapsed);
+		printf("FPS : %f\n", 1 / elapsed);
 
 		if(getCollisions().size() > 0)
 		{
@@ -86,7 +88,7 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 
 		brush->generateBendingConstraints(2);
 		brush->generateClusters(64);
-		brush->getCollisionShape()->setMargin(.1);
+		brush->getCollisionShape()->setMargin(.2);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
 		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS |
 		btSoftBody::fCollision::CL_SS;
@@ -100,7 +102,7 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush->appendNode(btVector3(0, 0, 0), 10);
 		btSoftBody::Material  *mt = brush->appendMaterial();
 		mt->m_kAST = 1;
-		mt->m_kLST = .03;
+		mt->m_kLST = .3;
 		mt->m_kVST = .03;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
 		{
@@ -204,3 +206,9 @@ bool MyRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) const
 {
 	return true;
 };
+
+bool Painter::isContacting()
+{
+	bool retn = brush->m_rcontacts.size() > 0;
+	return retn;
+}
