@@ -3,7 +3,14 @@ CSCI4830 Project 3
 
 Description
 -----------
-Use the Novint Falcon to paint 3D objects. More details coming soon.
+Use the Novint Falcon to paint 3D objects.
+
+Technologies Being Used
+-----------------------
+* Novint Falcon
+* Bullet Physics
+* Ogre
+* Nvidia 3D Vision
 
 Group Members
 -------------
