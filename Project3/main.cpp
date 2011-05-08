@@ -10,8 +10,12 @@
 #include "BtOgreExtras.h"
 #include <math.h>
 
+//#define NOVINT
+
 GraphicsManager graphicsManager;
+#ifdef NOVINT
 HapticsClass hap;
+#endif
 
 bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
 {
@@ -93,8 +97,10 @@ void main(int argc, char *argv[])
 
 	graphicsManager.loadCanvasObject("cube.obj", 2.5f, Vector3(0, 5, 0));
 
+	#ifdef NOVINT
 	//Haptics stuff
-	//hap.init(24, 10);
+	hap.init(24, 10);
+	#endif
 
 	Painter paint;
 
@@ -113,11 +119,14 @@ void main(int argc, char *argv[])
 	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
-	//hap.synchFromServo();
-	double startPos[3];
-	//hap.getPosition(startPos);
 
-	graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-90));
+	#ifdef NOVINT
+	hap.synchFromServo();
+	double startPos[3];
+	hap.getPosition(startPos);
+	#endif
+
+	//graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-90));
 
 #pragma region Main Loop
 	//Main Loop
@@ -125,7 +134,9 @@ void main(int argc, char *argv[])
 	const float speed = 5.f;
 	float rotation = 0.f;
 	const float NovintScale = 4.f;
+#ifndef NOVINT
 	btVector3 pos(0, 0, 0);
+#endif
 	int cValue = 0;
 	int cBool = -1;
 	double lastForceMag = 0;
@@ -137,12 +148,17 @@ void main(int argc, char *argv[])
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
-		//hap.synchFromServo();
+
+		#ifdef NOVINT
+		hap.synchFromServo();
+		#endif
+
 		graphicsManager.applyPaint(paint);
 		//dbgdraw->step();
 
 		m_Keyboard->capture();
 
+#ifndef NOVINT
 		if(m_Keyboard->isKeyDown(OIS::KC_W))
 			pos.setY(pos.y() + speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_S))
@@ -151,32 +167,48 @@ void main(int argc, char *argv[])
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
 			pos.setX(pos.x() + speed * elapsed);
+#endif
 		if(colorInput(m_Keyboard, &cValue, cBool) == true)
 		{
 			//Feed (*cValue) in here to a color according to cBool
 		}
-		if(m_Keyboard->isKeyDown(OIS::KC_D))
+		if(m_Keyboard->isKeyDown(OIS::KC_E))
 			rotation += 60 * elapsed;
-		if(m_Keyboard->isKeyDown(OIS::KC_A))
+		if(m_Keyboard->isKeyDown(OIS::KC_Q))
 			rotation -= 60 * elapsed;
 
+		#ifdef NOVINT
 		//update brush and sync
-		//double pos[3];
-		//hap.getPosition(pos);
-		
-		/*Vector3 ogPos(pos[0], pos[1], pos[2]);
+		double pos[3];
+		hap.getPosition(pos);
+
+		Vector3 ogPos(pos[0], pos[1], pos[2]);
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
 		ogPos *= NovintScale;
-		ogPos = q * ogPos;
+		ogPos = q.Inverse() * ogPos;
+
 		pos[0] = ogPos.x;
 		pos[1] = ogPos.y;
-		pos[2] = ogPos.z;*/
+		pos[2] = ogPos.z;
+		paint.setAnchorPosition(btVector3(pos[0] - startPos[0] * NovintScale, pos[1] - startPos[1] * NovintScale, pos[2] - startPos[2] * NovintScale));
+		#else
+		
+		Vector3 ogPos(pos.x(), pos.y(), pos.z());
+		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
+		//ogPos *= NovintScale;
+		ogPos = q.Inverse() * ogPos;
+		btVector3 newPos(0,0,0);
+		newPos.setX(ogPos.x);
+		newPos.setY(ogPos.y);
+		newPos.setZ(ogPos.z);
 
-		//paint.setAnchorPosition(btVector3(pos[0] - startPos[0] * NovintScale, pos[1] - startPos[1] * NovintScale, pos[2] - startPos[2] * NovintScale));
-		paint.setAnchorPosition(pos);
+		paint.setAnchorPosition(newPos);
+		#endif
+
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
-		//graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
+		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
+		graphicsManager.GetRootSceneNode()->getChild("brushSN")->setOrientation(q);
 
 		//Haptic forces from Bullet
 		btVector3 force = -paint.getForceDirection();
@@ -187,8 +219,10 @@ void main(int argc, char *argv[])
 		forceMag = lastForceMag + diff * .01;
 		lastForceMag = forceMag;*/
 
-		//if(cnt > 25)
-		//	hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
+		#ifdef NOVINT
+		if(cnt > 25)
+			hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
+		#endif
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);
