@@ -12,6 +12,7 @@
 #include "ConvexDecomposition\cd_wavefront.h"
 #include <iostream>
 #include <list>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 
 struct MyRayResultCallback;
 

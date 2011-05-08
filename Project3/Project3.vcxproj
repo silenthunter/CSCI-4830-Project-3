@@ -38,7 +38,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
-    <LibraryPath>$(Boost)\lib;.\lib;$(OgreLibDebug);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(Boost)\lib;.\lib\DebugLib;$(OgreLibDebug);$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
+    <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -51,7 +55,7 @@
       <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain_d.lib;OIS_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(ProjectDir)\dll\" "$(OutDir)"
+      <Command>copy "$(ProjectDir)\dll\DebugDll\" "$(OutDir)"
 copy "$(ProjectDir)\plugins.cfg" "$(OutDir)"
 copy "$(ProjectDir)\resources.cfg" "$(OutDir)"
 
@@ -73,7 +77,19 @@ copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain.lib;OIS.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(ProjectDir)\dll\ReleaseDll\" "$(OutDir)"
+copy "$(ProjectDir)\plugins_release.cfg" "$(OutDir)"
+copy "$(ProjectDir)\resources.cfg" "$(OutDir)"
+
+mkdir "$(OutDir)\Meshes\"
+copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
+
+mkdir "$(OutDir)\Textures\"
+copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BtOgreExtras.h" />

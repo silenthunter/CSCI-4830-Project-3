@@ -90,13 +90,11 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush->generateClusters(64);
 		brush->getCollisionShape()->setMargin(.2);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
-		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS |
-		btSoftBody::fCollision::CL_SS;
-		//btSoftBody::fCollision::CL_SELF;
+		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
 
 		brush->m_cfg.kDP = .1;
 		brush->m_cfg.kCHR = 0;
-		brush->m_cfg.piterations = 10;
+		brush->m_cfg.piterations = 5;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
@@ -148,8 +146,9 @@ void Painter::loadTarget(const char* fileName, btVector3 &position, btScalar sca
 		btDefaultMotionState *motionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), position));
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(0, motionState, tmpConvexShape, btVector3(0,0,0));
 		target = new btRigidBody(rigidBodyCI);
-		target->setFriction(btScalar(.9f));
-		target->setRestitution(btScalar(.9f));
+		target->setCollisionFlags(target->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
+		target->setFriction(btScalar(.1f));
+		target->setRestitution(btScalar(.1f));
 		dynamicsWorld->addRigidBody(target);
 	}
 }
@@ -186,7 +185,7 @@ std::list<ContactResult> Painter::getCollisions()
 		NewContact.triangleIndex = rayCallback.triIndex;
 		retn.push_back(NewContact);
 
-		myfile << NewContact.collisionPt.getX() << " " << NewContact.collisionPt.getY() << " " << NewContact.collisionPt.getZ() << "\n";
+		//myfile << NewContact.collisionPt.getX() << " " << NewContact.collisionPt.getY() << " " << NewContact.collisionPt.getZ() << "\n";
 	}
 	myfile.close();
 

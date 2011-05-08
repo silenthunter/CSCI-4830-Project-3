@@ -34,7 +34,10 @@ private:
 	int *indices;
 	int *UVindices;
 	Vector2 *UVs;
-	HardwarePixelBufferSharedPtr hardwarePtr;
+	HardwareVertexBufferSharedPtr vbufColor;
+	RenderSystem* rsCanvas;
+	RGBA *colours;
+	int numVertices;
 
 	void SetUpCamera();
 	Ogre::RenderWindow* GetWindow(string name);
@@ -51,7 +54,7 @@ public:
 	void InitBrushFromPainter(Painter &paint);
 	void updateOgreMeshFromBulletMesh(Painter &paint);
 	void applyPaint(Painter &paint);
-	void loadCanvasObject(string fileName, string WOname, float scale);
+	void loadCanvasObject(string fileName, float scale, Vector3 position);
 	Vector3 GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p);
 };
 
