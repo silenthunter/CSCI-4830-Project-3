@@ -1,7 +1,7 @@
 #include "Painter.h"
 #include <fstream>
 
-Painter::Painter(void)
+Painter::Painter(string obj)
 {
 	btCollisionConfiguration* m_collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
 	btDispatcher* m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
@@ -23,8 +23,10 @@ Painter::Painter(void)
 
 	updateCounter = 0;
 
+	string location = "Meshes/";
+	location.append(obj);
 	loadObj("Meshes/Sphere.obj", btVector3(0,0,0), 1.2f);
-	loadTarget("Meshes/cube.obj", btVector3(0,5,0), 2.5f);
+	loadTarget(location.c_str(), btVector3(0,5,0), 2.5f);
 }
 
 Painter::~Painter(void)

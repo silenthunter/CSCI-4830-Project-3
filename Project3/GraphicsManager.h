@@ -37,7 +37,7 @@ private:
 	HardwareVertexBufferSharedPtr vbufColor;
 	RenderSystem* rsCanvas;
 	RGBA *colours;
-	int numVertices;
+	int numIndices;
 
 	void SetUpCamera();
 	Ogre::RenderWindow* GetWindow(string name);

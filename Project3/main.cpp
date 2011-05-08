@@ -93,16 +93,18 @@ bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
 
 void main(int argc, char *argv[])
 {
+
+	string obj= "cube.obj";
 	graphicsManager.init();
 
-	graphicsManager.loadCanvasObject("cube.obj", 2.5f, Vector3(0, 5, 0));
+	graphicsManager.loadCanvasObject(obj, 2.5f, Vector3(0, 5, 0));
 
 	#ifdef NOVINT
 	//Haptics stuff
 	hap.init(24, 10);
 	#endif
 
-	Painter paint;
+	Painter paint(obj);
 
 	//Debug Drawer
 	SceneNode* debugSN = graphicsManager.GetRootSceneNode()->createChildSceneNode("debugSN");

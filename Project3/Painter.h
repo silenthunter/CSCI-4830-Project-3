@@ -12,7 +12,9 @@
 #include "ConvexDecomposition\cd_wavefront.h"
 #include <iostream>
 #include <list>
-#include <BulletCollision/CollisionShapes/btShapeHull.h>
+#include <string.h>
+
+using namespace std;
 
 struct MyRayResultCallback;
 
@@ -39,7 +41,7 @@ private:
 	int updateCounter;
 
 public:
-	Painter(void);
+	Painter(string obj);
 	~Painter(void);
 
 	bool isContacting();

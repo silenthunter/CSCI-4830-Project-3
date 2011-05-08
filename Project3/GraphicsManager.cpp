@@ -55,7 +55,7 @@ void GraphicsManager::loadCanvasObject(string fileName, float scale, Vector3 pos
 
 	if(!loadedWO) return;
 
-	numVertices = wo.mVertexCount;
+	numIndices = wo.mTriCount;
 
 	float *normals = new float[wo.mVertexCount * 3];
 	indices = new int[wo.mTriCount * 3];
@@ -419,7 +419,7 @@ void GraphicsManager::applyPaint(Painter &paint)
 
 	for(int i = 0; i < cResults.size(); i++, itr++)
 	{
-		if(itr->triangleIndex < 0 || itr->triangleIndex > numVertices * 3) continue; //Error Check
+		if(itr->triangleIndex < 0 || itr->triangleIndex > numIndices * 3) continue; //Error Check
 		int idx = itr->triangleIndex;
 		rsCanvas->convertColourValue(ColourValue(1, 0, 0), colours + indices[idx * 3]);
 	}
