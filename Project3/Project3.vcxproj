@@ -40,6 +40,12 @@
     <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
     <LibraryPath>$(Boost)\lib;.\lib;$(OgreLibDebug);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(Boost);$(OISInc);$(OgreInclude);$(BULLETSRC);.\includes;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>$(Boost)\lib;.\lib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

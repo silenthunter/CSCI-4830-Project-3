@@ -1,5 +1,4 @@
 #include "Painter.h"
-#include <fstream>
 
 Painter::Painter(void)
 {
@@ -25,10 +24,18 @@ Painter::Painter(void)
 
 	loadObj("Meshes/Sphere.obj", btVector3(0,0,0), 1.2f);
 	loadTarget("Meshes/cube.obj", btVector3(0,5,0), 2.5f);
+
+	origOff = new btVector3[brush->m_nodes.size() - 1];
+	btVector3 centerNodePosi = brush->m_nodes[brush->m_nodes.size() - 1].m_x;
+	for(int i = 0; i < brush->m_nodes.size() - 1; ++i)
+	{
+		origOff[i] = brush->m_nodes[i].m_x + centerNodePosi;
+	}
 }
 
 Painter::~Painter(void)
 {
+	delete[] origOff;
 }
 
 btSoftRigidDynamicsWorld* Painter::getDynamicsWorld()
@@ -44,7 +51,6 @@ void Painter::update(double elapsed)
 	double xAvg = 0, yAvg = 0, zAvg = 0;
 
 	int i;
-	btVector3 vec(0, 0, 0);
 	for (i = 0; i < btNodes.size(); ++i)
 	{
 	   //printf("Soft body node %d: (%f, %f, %f)\n", i, btNodes[i].m_x.x(), btNodes[i].m_x.y(), btNodes[i].m_x.z());
@@ -53,19 +59,10 @@ void Painter::update(double elapsed)
 		zAvg += btNodes[i].m_x.z();
 	}
 
-	for(i = 0; i < brush->m_links.size(); i++)
-		if(brush->m_links[i].m_n[1] == &(brush->m_nodes[brush->m_nodes.size() - 1]))
-			vec += brush->m_links[i].m_c3;
-
-	//lastForceDirection = forceDirection;
-	//forceDirection = lastForceDirection.lerp(vec, .5);
-	forceDirection = vec;
-
-	if(updateCounter++ % 25 == 0)
+	if(updateCounter++ % 100 == 0)
 	{
-		printf("Average position (%f, %f, %f)\n", vec.x(),vec.y(), vec.z());
-		//printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
-		printf("FPS : %f\n", 1 / elapsed);
+		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
+		printf("FPS : %f\n", 1000 * elapsed);
 
 		if(getCollisions().size() > 0)
 		{
@@ -75,8 +72,6 @@ void Painter::update(double elapsed)
 	}
 }
 
-//http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=6665
-//From my bullet physics post
 void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scaling)
 {
 	ConvexDecomposition::WavefrontObj wo;
@@ -87,26 +82,28 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 
 		brush->generateBendingConstraints(2);
+		brush->setTotalMass(30);
 		brush->generateClusters(64);
-		brush->getCollisionShape()->setMargin(.2);
+		brush->getCollisionShape()->setMargin(.1);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
 		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS |
 		btSoftBody::fCollision::CL_SS;
 		//btSoftBody::fCollision::CL_SELF;
 
-		brush->m_cfg.kDP = .1;
+		//brush->m_cfg.kDP = .1;
 		brush->m_cfg.kCHR = 0;
 		brush->m_cfg.piterations = 10;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
 		btSoftBody::Material  *mt = brush->appendMaterial();
-		mt->m_kAST = 1;
+		mt->m_kAST = .9;
 		mt->m_kLST = .3;
-		mt->m_kVST = .03;
+		mt->m_kVST = .3;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
 		{
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
+			//brush->setMass(i, 10);
 		}
 
 		dynamicsWorld->addSoftBody(brush);
@@ -159,18 +156,19 @@ void Painter::setAnchorPosition(btVector3 &pos)
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
 }
 
-btVector3 Painter::getForceDirection()
+void Painter::resetBrush()
 {
-	return forceDirection;
+	brush->m_nodes[brush->m_nodes.size() - 1].m_v.setZero();
+	for(int i = 0; i < brush->m_nodes.size() - 1; ++i)
+	{
+		brush->m_nodes[i].m_x = origOff[i] + brush->m_nodes[brush->m_nodes.size() - 1].m_x;
+	}
 }
 
 std::list<ContactResult> Painter::getCollisions()
 {
 	std::list<ContactResult> retn;
 	//triIndex.clear();
-
-	std::ofstream myfile;
-	myfile.open("somefile.txt");
 
 	for(int i = 0; i < brush->m_rcontacts.size(); i++)
 	{
@@ -185,15 +183,12 @@ std::list<ContactResult> Painter::getCollisions()
 		NewContact.collisionPt = rayCallback.contactPt;
 		NewContact.triangleIndex = rayCallback.triIndex;
 		retn.push_back(NewContact);
-
-		myfile << NewContact.collisionPt.getX() << " " << NewContact.collisionPt.getY() << " " << NewContact.collisionPt.getZ() << "\n";
 	}
-	myfile.close();
 
 	return retn;
 }
 
-btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
+btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 {
 	ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 	if(rayResult.m_collisionObject == self || rayResult.m_localShapeInfo == NULL) return rayResult.m_hitFraction;
@@ -206,9 +201,3 @@ bool MyRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) const
 {
 	return true;
 };
-
-bool Painter::isContacting()
-{
-	bool retn = brush->m_rcontacts.size() > 0;
-	return retn;
-}

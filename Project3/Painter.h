@@ -31,8 +31,7 @@ private:
 	btSoftBodyWorldInfo worldInfo;
 	btSoftBody* brush;
 	btRigidBody* target;
-	btVector3 forceDirection;
-	btVector3 lastForceDirection;
+	btVector3 *origOff;
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
@@ -41,11 +40,10 @@ public:
 	Painter(void);
 	~Painter(void);
 
-	bool isContacting();
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
+	void resetBrush();
 	std::list<ContactResult> getCollisions();
-	btVector3 getForceDirection();
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };
 
@@ -61,6 +59,6 @@ struct MyRayResultCallback : public btCollisionWorld::ClosestRayResultCallback
 	btVector3 contactPt;
 	int triIndex;
 
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace);
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
 	virtual bool needsCollision (btBroadphaseProxy *proxy0) const;
 };

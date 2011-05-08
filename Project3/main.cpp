@@ -2,16 +2,13 @@
 #include <OIS.h>
 #include "GraphicsManager.h"
 #include "GameTimer.h"
-#include "haptics.h"
 #include "Painter.h"
 
 #include "BtOgrePG.h"
 #include "BtOgreGP.h"
 #include "BtOgreExtras.h"
-#include <math.h>
 
 GraphicsManager graphicsManager;
-HapticsClass hap;
 
 bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
 {
@@ -93,9 +90,6 @@ void main(int argc, char *argv[])
 
 	graphicsManager.loadCanvasObject("cube.mesh", "cube.obj", 2.5f);
 
-	//Haptics stuff
-	hap.init(24, 10);
-
 	Painter paint;
 
 	//Debug Drawer
@@ -113,9 +107,6 @@ void main(int argc, char *argv[])
 	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
-	hap.synchFromServo();
-	double startPos[3];
-	hap.getPosition(startPos);
 
 	graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-90));
 
@@ -123,72 +114,57 @@ void main(int argc, char *argv[])
 	//Main Loop
 	GameTimer timer;
 	const float speed = 5.f;
-	float rotation = 0.f;
-	const float NovintScale = 4.f;
-	//btVector3 pos(0, 0, 0);
+	btVector3 pos(0, 0, 0);
+
 	int cValue = 0;
 	int cBool = -1;
-	double lastForceMag = 0;
-	int cnt = 0;
 
 	while(1)
 	{
-		cnt++;
+		//graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(3));
+		//graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->pitch(Degree(3));
+
 		double elapsed = timer.getElapsedTimeSec();
 		graphicsManager.RenderFrame(elapsed);
 		Ogre::WindowEventUtilities::messagePump();
-		hap.synchFromServo();
+		dbgdraw->step();
 		graphicsManager.applyPaint(paint);
-		//dbgdraw->step();
 
 		m_Keyboard->capture();
 
-		/*if(m_Keyboard->isKeyDown(OIS::KC_W))
+		if(m_Keyboard->isKeyDown(OIS::KC_W))
 			pos.setY(pos.y() + speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_S))
 			pos.setY(pos.y() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_A))
 			pos.setX(pos.x() - speed * elapsed);
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
-			pos.setX(pos.x() + speed * elapsed);*/
+			pos.setX(pos.x() + speed * elapsed);
+		if(m_Keyboard->isKeyDown(OIS::KC_Q))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(-3));
+		if(m_Keyboard->isKeyDown(OIS::KC_E))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->yaw(Degree(3));
+		if(m_Keyboard->isKeyDown(OIS::KC_Z))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->pitch(Degree(3));
+		if(m_Keyboard->isKeyDown(OIS::KC_X))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->pitch(Degree(-3));
+		if(m_Keyboard->isKeyDown(OIS::KC_R))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->roll(Degree(3));
+		if(m_Keyboard->isKeyDown(OIS::KC_F))
+			graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->roll(Degree(-3));
+		if(m_Keyboard->isKeyDown(OIS::KC_SPACE))
+			paint.resetBrush();
+		if(m_Keyboard->isKeyDown(OIS::KC_ESCAPE))
+			return;
 		if(colorInput(m_Keyboard, &cValue, cBool) == true)
 		{
 			//Feed (*cValue) in here to a color according to cBool
 		}
-		if(m_Keyboard->isKeyDown(OIS::KC_D))
-			rotation += 60 * elapsed;
-		if(m_Keyboard->isKeyDown(OIS::KC_A))
-			rotation -= 60 * elapsed;
 
 		//update brush and sync
-		double pos[3];
-		hap.getPosition(pos);
-		
-		Vector3 ogPos(pos[0], pos[1], pos[2]);
-		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
-		ogPos *= NovintScale;
-		ogPos = q * ogPos;
-		pos[0] = ogPos.x;
-		pos[1] = ogPos.y;
-		pos[2] = ogPos.z;
-
-		paint.setAnchorPosition(btVector3(pos[0] - startPos[0] * NovintScale, pos[1] - startPos[1] * NovintScale, pos[2] - startPos[2] * NovintScale));
-		//paint.setAnchorPosition(pos);
+		paint.setAnchorPosition(pos);
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
-		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
-
-		//Haptic forces from Bullet
-		btVector3 force = -paint.getForceDirection();
-		Vector3 forceOgre(force.x(), force.y(), force.z());
-		double forceMag = forceOgre.length() / 10000 * (paint.isContacting() ? 5.5 : 3);//log(forceOgre.length()) * 100;
-
-		/*double diff = forceMag - lastForceMag;
-		forceMag = lastForceMag + diff * .01;
-		lastForceMag = forceMag;*/
-
-		if(cnt > 25)
-			hap.forceDirection(forceOgre.normalisedCopy(), forceMag);
 
 		//Save last key states
 		m_Keyboard->copyKeyStates(keyStates);
