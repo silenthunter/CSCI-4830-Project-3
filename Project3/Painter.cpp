@@ -1,6 +1,5 @@
 #include "Painter.h"
 
-
 Painter::Painter(void)
 {
 	btCollisionConfiguration* m_collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
@@ -17,19 +16,26 @@ Painter::Painter(void)
 	dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher,m_broadphase,m_solver,m_collisionConfiguration);
 	worldInfo.m_broadphase = m_broadphase;
 	worldInfo.m_dispatcher = m_dispatcher;
-	worldInfo.m_sparsesdf.Initialize();
 	worldInfo.m_gravity.setValue(0, 0, 0);
+	worldInfo.m_sparsesdf.Initialize();
 	dynamicsWorld->setGravity(btVector3(0,0,0));
 
 	updateCounter = 0;
 
 	loadObj("Meshes/Sphere.obj", btVector3(0,0,0), 1.2f);
 	loadTarget("Meshes/cube.obj", btVector3(0,5,0), 2.5f);
-}
 
+	origOff = new btVector3[brush->m_nodes.size() - 1];
+	btVector3 centerNodePosi = brush->m_nodes[brush->m_nodes.size() - 1].m_x;
+	for(int i = 0; i < brush->m_nodes.size() - 1; ++i)
+	{
+		origOff[i] = brush->m_nodes[i].m_x + centerNodePosi;
+	}
+}
 
 Painter::~Painter(void)
 {
+	delete[] origOff;
 }
 
 btSoftRigidDynamicsWorld* Painter::getDynamicsWorld()
@@ -57,6 +63,12 @@ void Painter::update(double elapsed)
 	{
 		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
 		printf("FPS : %f\n", 1000 * elapsed);
+
+		if(getCollisions().size() > 0)
+		{
+		//int vec = getCollisions().front();
+		//printf("index (%d)\n", vec);
+		}
 	}
 }
 
@@ -70,10 +82,17 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 
 		brush->generateBendingConstraints(2);
-		brush->setTotalMass(30,true);
+		brush->setTotalMass(30);
 		brush->generateClusters(64);
-		brush->getCollisionShape()->setMargin(0.3);
+		brush->getCollisionShape()->setMargin(.1);
 		brush->setDeactivationTime(DISABLE_DEACTIVATION);
+		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS |
+		btSoftBody::fCollision::CL_SS;
+		//btSoftBody::fCollision::CL_SELF;
+
+		//brush->m_cfg.kDP = .1;
+		brush->m_cfg.kCHR = 0;
+		brush->m_cfg.piterations = 10;
 
 		//Create and attach a center node
 		brush->appendNode(btVector3(0, 0, 0), 10);
@@ -82,7 +101,10 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		mt->m_kLST = .3;
 		mt->m_kVST = .3;
 		for(int i = 0; i < brush->m_nodes.size() - 1; i++)
+		{
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
+			//brush->setMass(i, 10);
+		}
 
 		dynamicsWorld->addSoftBody(brush);
 
@@ -133,3 +155,49 @@ void Painter::setAnchorPosition(btVector3 &pos)
 {
 	brush->m_nodes[brush->m_nodes.size() - 1].m_x = pos;
 }
+
+void Painter::resetBrush()
+{
+	brush->m_nodes[brush->m_nodes.size() - 1].m_v.setZero();
+	for(int i = 0; i < brush->m_nodes.size() - 1; ++i)
+	{
+		brush->m_nodes[i].m_x = origOff[i] + brush->m_nodes[brush->m_nodes.size() - 1].m_x;
+	}
+}
+
+std::list<ContactResult> Painter::getCollisions()
+{
+	std::list<ContactResult> retn;
+	//triIndex.clear();
+
+	for(int i = 0; i < brush->m_rcontacts.size(); i++)
+	{
+		btSoftBody::Node *node = brush->m_rcontacts[i].m_node;
+		btVector3 pos = brush->m_nodes[brush->m_nodes.size() - 1].m_x;
+		//retn.push_back(pos);
+		btVector3 secondPos = node->m_x - pos;
+		MyRayResultCallback rayCallback(pos, secondPos, this, brush);
+		dynamicsWorld->rayTest(pos, secondPos, rayCallback);
+
+		ContactResult NewContact;
+		NewContact.collisionPt = rayCallback.contactPt;
+		NewContact.triangleIndex = rayCallback.triIndex;
+		retn.push_back(NewContact);
+	}
+
+	return retn;
+}
+
+btScalar MyRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+{
+	ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+	if(rayResult.m_collisionObject == self || rayResult.m_localShapeInfo == NULL) return rayResult.m_hitFraction;
+	triIndex =rayResult.m_localShapeInfo->m_triangleIndex;
+	contactPt = this->m_hitPointWorld - this->m_collisionObject->getWorldTransform().getOrigin();
+    return rayResult.m_hitFraction;
+}
+
+bool MyRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) const
+{
+	return true;
+};

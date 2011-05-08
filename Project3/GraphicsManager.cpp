@@ -1,10 +1,8 @@
 #include "GraphicsManager.h"
 
-
 GraphicsManager::GraphicsManager(void)
 {
 }
-
 
 GraphicsManager::~GraphicsManager(void)
 {
@@ -49,13 +47,71 @@ void GraphicsManager::init()
 	//return root;
 }
 
+void GraphicsManager::loadCanvasObject(string fileName, string WOname, float scale)
+{
+
+#pragma region Load WaveObject mesh file
+	//Load the mesh first and initialize vertex and index arrays
+	ConvexDecomposition::WavefrontObj wo;
+	int loadedWO = wo.loadObj(("Meshes/" + WOname).c_str());
+
+	if(loadedWO)
+	{
+		vertices = new Vector3[wo.mVertexCount * 3];
+		indices = new int[wo.mTriCount * 3];
+		UVindices = new int[wo.mTriCount * 3];
+		UVs = new Vector2[wo.mUVCount];
+
+		for(int i = 0; i < wo.mVertexCount * 3; i++) vertices[i]  = Vector3(wo.mVertices[i * 3], wo.mVertices[i * 3 + 1], wo.mVertices[i * 3 + 2]) * scale;
+		for(int i = 0; i < wo.mTriCount * 3; i++) indices[i] = wo.mIndices[i];
+		for(int i = 0; i < wo.mUVCount; i++) UVs[i] = Vector2(wo.mUVs[i * 2], wo.mUVs[i * 2 + 1]);
+		for(int i = 0; i < wo.mTriCount * 3; i++) {UVindices[i] = wo.mIndicesToUVidx[i]; cout << UVindices[i] << endl;};
+	}
+
+#pragma endregion
+	canvas = manager->createEntity("ObjectEntity", fileName);
+	//canvas->setMaterialName("Box");
+	Ogre::SceneNode* ObjectScene = root_sn->createChildSceneNode("ObjectScene");
+	ObjectScene->attachObject(canvas);
+	ObjectScene->setPosition(0, 5, -20);
+	ObjectScene->setScale(2.5, 2.5, 2.5);
+
+	texture = TextureManager::getSingleton().createManual("Canvas", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+															TEX_TYPE_2D, 512, 512, 
+															0, PF_BYTE_BGRA, TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+
+	hardwarePtr = texture->getBuffer();
+	MaterialPtr ptr = MaterialManager::getSingleton().create("DynamicTextureMaterial", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ptr->getTechnique(0)->getPass(0)->createTextureUnitState("Canvas");
+	canvas->setMaterial(ptr);
+
+	//Initialize texture
+	hardwarePtr->lock(HardwareBuffer::HBL_NORMAL);
+	const PixelBox& pixelBox = hardwarePtr->getCurrentLock();
+
+	uint8* pDest = static_cast<uint8*>(pixelBox.data);
+
+	// Fill in some pixel data. This will give a semi-transparent blue,
+	// but this is of course dependent on the chosen pixel format.
+	for (size_t j = 0; j < 512; j++)
+		for(size_t i = 0; i < 512; i++)
+		{
+			*pDest++ = 255; // B
+			*pDest++ =   255; // G
+			*pDest++ =   255; // R
+			*pDest++ = 255; // A
+		}
+
+	hardwarePtr->unlock();
+}
+
 Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 {
 	Ogre::NameValuePairList nvpl;
 	nvpl["parentWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 	nvpl["externalWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 
-	window = root->createRenderWindow(name, 0, 0, false, &nvpl);
+	window = root->createRenderWindow(name, 1689, 1020, true, &nvpl);
 	window->setVisible(true);
 	if(render_windows.size() == 0)
 		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
@@ -63,7 +119,7 @@ Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 	render_windows[name] = window;
 	window->setDeactivateOnFocusChange(false);
 
-	window->resize(800,600);
+	//window->resize(800,600);
 
 	return window;
 }
@@ -84,7 +140,7 @@ void GraphicsManager::SetUpCamera()
 	c->setAutoAspectRatio(true);
 
 	//TODO: Remove temporary settings
-	c->setPosition(Ogre::Vector3(0, 0, 0));
+	c->setPosition(Ogre::Vector3(5, 0, 0));
 	//c->lookAt(8,3,0);
 	/*Ogre::Light *l = manager->createLight("light1");
 	root_sn->attachObject(l);
@@ -95,6 +151,9 @@ void GraphicsManager::SetUpCamera()
 	c_sn = manager->createSceneNode("main_camera");
 	c_sn->setPosition(0, 3, 0);
 	//c_sn->attachObject(c);
+
+	//c->lookAt(0, 0, 0);
+	c->yaw(Degree(30));
 
 	root_sn->addChild(player);
 	player->addChild(c_sn);
@@ -188,7 +247,7 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
     offset += VertexElement::getTypeSize(VET_FLOAT3);
     /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
     /// and bytes per vertex (offset)
-    HardwareVertexBufferSharedPtr vbuf = 
+    vbuf = 
         HardwareBufferManager::getSingleton().createVertexBuffer(
         offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
     /// Upload the vertex data to the card
@@ -284,4 +343,98 @@ void GraphicsManager::updateOgreMeshFromBulletMesh(Painter &paint)
         }
         vbuf->unlock();
     //}
+}
+
+void GraphicsManager::applyPaint(Painter &paint)
+{
+	hardwarePtr->lock(HardwareBuffer::HBL_NORMAL);
+	const PixelBox& pixelBox = hardwarePtr->getCurrentLock();
+
+	uint8* pDest = static_cast<uint8*>(pixelBox.data);
+
+	std::list<ContactResult> cResults = paint.getCollisions();
+	std::list<ContactResult>::iterator itr = cResults.begin();
+
+	for(int i = 0; i < cResults.size(); i++, itr++)
+	{
+		if(itr->triangleIndex < 0) continue; //Error Check
+		int idx = itr->triangleIndex;
+		Vector3 p1 = vertices[indices[idx * 3]];
+		Vector3 p2 = vertices[indices[idx * 3 + 1]];
+		Vector3 p3 = vertices[indices[idx * 3 + 2]];
+		Vector3 p(itr->collisionPt.x(), itr->collisionPt.y(), itr->collisionPt.z());
+
+		Vector3 bcc = GetBaryCentricCoords(p1, p2, p3, p);
+
+		Vector2 T1 = UVs[UVindices[idx * 3]];
+		Vector2 T2 = UVs[UVindices[idx * 3 + 1]];
+		Vector2 T3 = UVs[UVindices[idx * 3 + 2]];
+
+		/*
+		printf("p1: %f.8, %f.8, %f.8\n", p1.x, p1.y, p1.z);
+		printf("p2: %f.8, %f.8, %f.8\n", p2.x, p2.y, p2.z);
+		printf("p3: %f.8, %f.8, %f.8\n", p3.x, p3.y, p3.z);
+		printf("p: %f.8, %f.8, %f.8\n", p.x, p.y, p.z);
+		printf("bcc: %f.8, %f.8, %f.8\n", bcc.x, bcc.y, bcc.z);
+		*/
+
+		//This is the UV coordinate
+		//http://www.ogre3d.org/forums/viewtopic.php?t=35202
+
+		Vector2 T = T1 * bcc.x + T2 * bcc.y + T3 * bcc.z;
+
+		/*
+		printf("T: %f.8, %f.8\n", T.x, T.y);
+		printf("T1: %f.8, %f.8\n", T1.x, T1.y);
+		printf("T2: %f.8, %f.8\n", T2.x, T2.y);
+		printf("T3: %f.8, %f.8\n", T3.x, T3.y);
+		*/
+
+		T.y = 1 - T.y;
+
+		//printf("T: %f.8, %f.8\n", T.x, T.y);
+
+		int pixelIdx = (((int)(512 * T.x) + 512 * (int)(512 * T.y))) * 4;
+
+		/*
+		for(int i = 512*.3333; i < 512*.6666; i++)
+		{
+			for(int j = 512*.3333; j < i; j++)
+			{
+				int pIdx = ((512 - i)* 512 + j) * 4;
+				pDest[pIdx] = 255;
+				pDest[pIdx + 1] = 255;
+				pDest[pIdx + 2] = 255;
+				pDest[pIdx + 3] = 255;
+			}
+		}
+
+		printf("pixelIdx: %d\n", pixelIdx);
+		*/
+		pDest[pixelIdx] = 0;
+		pDest[pixelIdx + 1] = 0;
+	}
+	hardwarePtr->unlock();
+}
+
+Vector3 GraphicsManager::GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p)
+{	
+	// Compute the normal of the triangle
+	Vector3 temp1 = p2 - p1;
+	Vector3 temp2 = p3 - p1;
+	Vector3 N = ((temp1).crossProduct(temp2));
+	N.normalise();
+	// Compute twice area of triangle ABC
+	float AreaABC = (temp1.crossProduct(temp2)).dotProduct(N);
+	// Compute a
+	float AreaPBC = ((p2 - p).crossProduct(p3 - p)).dotProduct(N);
+	float a = AreaPBC / AreaABC;
+	// Compute b
+	float AreaPCA = ((p3 - p).crossProduct(p1 - p)).dotProduct(N);
+	float b = AreaPCA / AreaABC;
+	// Compute c
+	float c = 1.0f - a - b;
+
+	Vector3 BC(a, b, c);
+	return BC;
 }

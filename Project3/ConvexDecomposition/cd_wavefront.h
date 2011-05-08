@@ -53,8 +53,11 @@ public:
 
   int	          mVertexCount;
   int	          mTriCount;
+  int	          mUVCount;
   int          *mIndices;
+  int          *mIndicesToUVidx;
   float        *mVertices;
+  float        *mUVs;
 };
 
 }
