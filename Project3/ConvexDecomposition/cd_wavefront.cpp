@@ -547,6 +547,7 @@ public:
 	float        mNormal[3];
 	float        mTexel[2];
 	int mTexelIdx;
+	int mNormalIdx;
 };
 
 
@@ -556,6 +557,7 @@ public:
 
   virtual void NodeTriangle(const GeometryVertex *v1,const GeometryVertex *v2,const GeometryVertex *v3) {}
   virtual void AddTexel(float t1, float t2){}
+  virtual void AddNormal(float n1, float n2, float n3){}
 
   virtual ~GeometryInterface () {}
 };
@@ -647,6 +649,7 @@ void OBJ::getVertex(GeometryVertex &v,const char *face) const
     if ( normal )
     {
       int nindex = atoi( normal+1 ) - 1;
+	  v.mNormalIdx = nindex;
 
       if (nindex >= 0 && nindex < (int)(mNormals.size()/3) )
       {
@@ -711,6 +714,7 @@ int OBJ::ParseLine(int lineno,int argc,const char **argv)  // return TRUE to con
         mNormals.push_back(normalx);
         mNormals.push_back(normaly);
         mNormals.push_back(normalz);
+		mCallback->AddNormal(normalx, normaly, normalz);
       }
 //  else if ( stricmp(argv[0],"f") == 0 && argc >= 4 )
 
@@ -800,6 +804,13 @@ public:
 		mTexels.push_back(t2);
 	}
 
+	virtual void AddNormal(float n1, float n2, float n3)
+	{
+		mNormals.push_back(n1);
+		mNormals.push_back(n2);
+		mNormals.push_back(n3);
+	}
+
 	virtual void NodeTriangle(const GeometryVertex *v1,const GeometryVertex *v2,const GeometryVertex *v3)
 	{
 		mIndices.push_back( getIndex(v1->mPos) );
@@ -808,18 +819,25 @@ public:
 		mIndicesToTexel.push_back( v1->mTexelIdx );
 		mIndicesToTexel.push_back( v2->mTexelIdx );
 		mIndicesToTexel.push_back( v3->mTexelIdx );
+		mIndicesToNormal.push_back(v1->mNormalIdx);
+		mIndicesToNormal.push_back(v2->mNormalIdx);
+		mIndicesToNormal.push_back(v3->mNormalIdx);
 	}
 
   const FloatVector& GetVertices(void) const { return mVertices; };
   const FloatVector& GetTexels(void) const { return mTexels; };
+  const FloatVector& GetNormals(void) const { return mNormals; };
   const IntVector& GetIndices(void) const { return mIndices; };
   const IntVector& GetIndicesToTexel(void) const { return mIndicesToTexel; };
+  const IntVector& GetIndicesToNormal(void) const { return mIndicesToNormal; };
 
 private:
   FloatVector     mVertices;
   FloatVector     mTexels;
+  FloatVector     mNormals;
   IntVector		    mIndices;
   IntVector		    mIndicesToTexel;
+  IntVector		    mIndicesToNormal;
 };
 
 
@@ -860,7 +878,9 @@ unsigned int WavefrontObj::loadObj(const char *fname) // load a wavefront obj re
 	const FloatVector &vlist = bm.GetVertices();
 	const IntVector &indices = bm.GetIndices();
 	const FloatVector &tlist = bm.GetTexels();
+	const FloatVector &nlist = bm.GetNormals();
 	const IntVector &tIndex = bm.GetIndicesToTexel();
+	const IntVector &nIndex = bm.GetIndicesToNormal();
 
 	if ( vlist.size() )
 	{
@@ -878,6 +898,16 @@ unsigned int WavefrontObj::loadObj(const char *fname) // load a wavefront obj re
 			mIndicesToUVidx = new int[mTriCount * 3];
 			memcpy(mIndicesToUVidx, &tIndex[0], sizeof(int) * mTriCount * 3);
 		}
+
+		mNormalCount = nlist.size() / 3;
+		if(mNormalCount > 0)
+		{
+			mNormals = new float [mNormalCount * 3];
+			memcpy(mNormals, &nlist[0], sizeof(float) * mNormalCount * 3);
+			mIndicesToNormals = new int[mTriCount * 3];
+			memcpy(mIndicesToNormals, &nIndex[0], sizeof(int) * mTriCount * 3);
+		}
+
 		ret = mTriCount;
 	}
 

@@ -54,9 +54,12 @@ public:
   int	          mVertexCount;
   int	          mTriCount;
   int	          mUVCount;
+  int			  mNormalCount;
   int          *mIndices;
   int          *mIndicesToUVidx;
+  int          *mIndicesToNormals;
   float        *mVertices;
+  float        *mNormals;
   float        *mUVs;
 };
 
