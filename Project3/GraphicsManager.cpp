@@ -43,8 +43,58 @@ void GraphicsManager::init()
 
 	GetWindow("Project 3");
 	SetUpCamera();
-
+	initBackground();
 	//return root;
+}
+
+void GraphicsManager::initBackground()
+{
+	//http://www.ogre3d.org/tikiwiki/Displaying+2D+Backgrounds&structure=Cookbook
+
+	// Create background material
+	MaterialPtr material = MaterialManager::getSingleton().create("Background", "General");
+	material->getTechnique(0)->getPass(0)->createTextureUnitState("Meshes/spacesky.jpg");
+	material->getTechnique(0)->getPass(0)->setDepthCheckEnabled(false);
+	material->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+	material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+
+	// Create background rectangle covering the whole screen
+	int bgCubeBoundary = 5000;
+	createCube(bgCubeBoundary);
+
+	// Attach background to the scene
+	SceneNode* node = manager->getRootSceneNode()->createChildSceneNode("Background");
+	node->attachObject(bgCube);
+}
+
+void GraphicsManager::createCube(int bound)
+{
+    bgCube = manager->createManualObject("BGCube");
+	bgCube->begin("Background");
+
+	//Vertices
+    bgCube->position(-bound, -bound, -bound);   //0
+    bgCube->position(bound, -bound, -bound);    //1
+    bgCube->position(bound, -bound, bound);    //2
+    bgCube->position(-bound, -bound, bound);    //3
+    bgCube->position(-bound, bound, -bound);    //4
+    bgCube->position(bound, bound, -bound);    //5
+    bgCube->position(bound, bound, bound);    //6
+    bgCube->position(-bound, bound, bound);    //7
+
+	//Normal
+    bgCube->triangle(0, 2, 1);
+    bgCube->triangle(0, 2, 3);
+    bgCube->triangle(3, 4, 0);
+    bgCube->triangle(3, 7, 4);
+    bgCube->triangle(4, 7, 6);
+    bgCube->triangle(4, 6, 5);
+    bgCube->triangle(5, 2, 1);
+    bgCube->triangle(5, 6, 2);
+    bgCube->triangle(0, 4, 1);
+    bgCube->triangle(5, 1, 4);
+    bgCube->triangle(3, 6, 7);
+    bgCube->triangle(3, 2, 6);
 }
 
 void GraphicsManager::loadCanvasObject(string fileName, float scale, Vector3 position)

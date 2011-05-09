@@ -29,6 +29,7 @@ private:
 	Ogre::Viewport *vp;
 	Ogre::Entity *brush;
 	Ogre::Entity *canvas;
+	Ogre::ManualObject* bgCube;
 	Ogre::TexturePtr texture;
 	Vector3 *vertices;
 	int *indices;
@@ -49,6 +50,8 @@ public:
 	Ogre::RenderWindow* GetWindow();
 	void RenderFrame(Ogre::Real timeSinceLastFrame);
 	void init();
+	void initBackground();
+	void createCube(int bound);
 	Ogre::SceneNode *GetRootSceneNode();
 	Ogre::SceneManager *GetManager();
 	void InitBrushFromPainter(Painter &paint);
