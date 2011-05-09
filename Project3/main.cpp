@@ -2,6 +2,7 @@
 #include <OIS.h>
 #include "GraphicsManager.h"
 #include "GameTimer.h"
+#include "haptics.h"
 #include "Painter.h"
 
 #include "BtOgrePG.h"
@@ -131,8 +132,6 @@ void main(int argc, char *argv[])
 	//Main Loop
 	GameTimer timer;
 	const float speed = 5.f;
-	btVector3 pos(0, 0, 0);
-
 	float rotation = 0.f;
 	const float NovintScale = 4.f;
 #ifndef NOVINT
@@ -174,6 +173,10 @@ void main(int argc, char *argv[])
 		{
 			//Feed (*cValue) in here to a color according to cBool
 		}
+		if(m_Keyboard->isKeyDown(OIS::KC_SPACE))
+			paint.resetBrush();
+		if(m_Keyboard->isKeyDown(OIS::KC_ESCAPE))
+			return;
 		if(m_Keyboard->isKeyDown(OIS::KC_E))
 			rotation += 60 * elapsed;
 		if(m_Keyboard->isKeyDown(OIS::KC_Q))
@@ -181,7 +184,6 @@ void main(int argc, char *argv[])
 
 		#ifdef NOVINT
 		//update brush and sync
-		paint.setAnchorPosition(pos);
 		double pos[3];
 		hap.getPosition(pos);
 

@@ -35,6 +35,7 @@ private:
 	btSoftBody* brush;
 	btRigidBody* target;
 	btVector3 *origOff;
+	btVector3 forceDirection;
 	void loadObj(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	void loadTarget(const char* fileName, btVector3 &position, btScalar scaling = 1.f);
 	int updateCounter;
@@ -46,6 +47,8 @@ public:
 	void update(double elapsed);
 	void setAnchorPosition(btVector3 &pos);
 	void resetBrush();
+	bool Painter::isContacting();
+	btVector3 Painter::getForceDirection();
 	std::list<ContactResult> getCollisions();
 	btSoftRigidDynamicsWorld* getDynamicsWorld();
 };

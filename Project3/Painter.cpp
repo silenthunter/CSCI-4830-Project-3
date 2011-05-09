@@ -61,6 +61,7 @@ void Painter::update(double elapsed)
 		zAvg += btNodes[i].m_x.z();
 	}
 
+	btVector3 vec(0, 0, 0);
 	for(i = 0; i < brush->m_links.size(); i++)
 		if(brush->m_links[i].m_n[1] == &(brush->m_nodes[brush->m_nodes.size() - 1]))
 			vec += brush->m_links[i].m_c3;

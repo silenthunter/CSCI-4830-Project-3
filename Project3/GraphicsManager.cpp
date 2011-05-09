@@ -421,16 +421,7 @@ void GraphicsManager::applyPaint(Painter &paint)
 		if(itr->triangleIndex < 0 || itr->triangleIndex > numIndices * 3) continue; //Error Check
 		int idx = itr->triangleIndex;
 		rsCanvas->convertColourValue(ColourValue(1, 0, 0), colours + indices[idx * 3]);
-
+	}
 
 	vbufColor->writeData(0, vbufColor->getSizeInBytes(), colours, true);
-				pDest[pIdx + 2] = 255;
-				pDest[pIdx + 3] = 255;
-			}
-		}
-		printf("pixelIdx: %d\n", pixelIdx);
-		*/
-		pDest[pixelIdx] = 0;
-		pDest[pixelIdx + 1] = 0;
-	}
 }
