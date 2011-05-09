@@ -1,9 +1,10 @@
-material Box
+material BackgroundMat
 {
 	technique
 	{
 		pass
 		{
+			cull_hardware none
 			texture_unit
 			{
 				texture MRAMOR6X6.jpg

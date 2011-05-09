@@ -425,3 +425,12 @@ void GraphicsManager::applyPaint(Painter &paint)
 
 	vbufColor->writeData(0, vbufColor->getSizeInBytes(), colours, true);
 }
+
+void GraphicsManager::createBackground()
+{
+	Entity *background = manager->createEntity("Background", "Block.mesh");
+	background->setMaterialName("BackgroundMat");
+	SceneNode *sn = root_sn->createChildSceneNode("BgScene");
+	sn->scale(100, 100, 100);
+	sn->attachObject(background);
+}

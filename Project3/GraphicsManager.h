@@ -49,6 +49,7 @@ public:
 	Ogre::RenderWindow* GetWindow();
 	void RenderFrame(Ogre::Real timeSinceLastFrame);
 	void init();
+	void createBackground();
 	Ogre::SceneNode *GetRootSceneNode();
 	Ogre::SceneManager *GetManager();
 	void InitBrushFromPainter(Painter &paint);

@@ -69,10 +69,10 @@ mkdir "$(OutDir)\Meshes\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
 
 mkdir "$(OutDir)\Textures\"
-copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
+copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rmdir \S \Q "$(ProjectDir)"</Command>
+      <Command>rmdir \S \Q "$(TargettDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,10 +97,10 @@ mkdir "$(OutDir)\Meshes\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
 
 mkdir "$(OutDir)\Textures\"
-copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
+copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rmdir \S \Q "$(ProjectDir)"</Command>
+      <Command>rmdir \S \Q "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
