@@ -45,10 +45,10 @@
     <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(Boost);$(OISInc);$(OgreInclude);$(BULLETSRC);.\includes;$(IncludePath)</IncludePath>
+    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>$(Boost)\lib;.\lib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -71,6 +71,9 @@ copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
 mkdir "$(OutDir)\Textures\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rmdir \S \Q "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -96,6 +99,9 @@ copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
 mkdir "$(OutDir)\Textures\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Textures\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rmdir \S \Q "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BtOgreExtras.h" />

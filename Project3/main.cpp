@@ -133,6 +133,7 @@ void main(int argc, char *argv[])
 	GameTimer timer;
 	const float speed = 5.f;
 	float rotation = 0.f;
+	float rotationY = 0.f;
 	const float NovintScale = 4.f;
 #ifndef NOVINT
 	btVector3 pos(0, 0, 0);
@@ -181,17 +182,24 @@ void main(int argc, char *argv[])
 			rotation += 60 * elapsed;
 		if(m_Keyboard->isKeyDown(OIS::KC_Q))
 			rotation -= 60 * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_R))
+			rotationY += 60 * elapsed;
+		if(m_Keyboard->isKeyDown(OIS::KC_F))
+			rotationY -= 60 * elapsed;
 
 		#ifdef NOVINT
 		//update brush and sync
 		double pos[3];
 		hap.getPosition(pos);
 
+		//pos[1] -= 5;//Compensate for starting position
+
 		Vector3 ogPos(pos[0], pos[1], pos[2]);
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
+		Quaternion qY(Degree(rotationY), Vector3::UNIT_X);
 		ogPos *= NovintScale;
 		ogPos = q.Inverse() * ogPos;
-
+		ogPos = qY.Inverse() * ogPos;
 		pos[0] = ogPos.x;
 		pos[1] = ogPos.y;
 		pos[2] = ogPos.z;
@@ -199,9 +207,12 @@ void main(int argc, char *argv[])
 		#else
 		
 		Vector3 ogPos(pos.x(), pos.y(), pos.z());
+		ogPos.y -= 5;//Compensate for starting position
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
-		//ogPos *= NovintScale;
+		Quaternion qY(Degree(rotationY), Vector3::UNIT_X);
 		ogPos = q.Inverse() * ogPos;
+		ogPos = qY.Inverse() * ogPos;
+		ogPos.y += 5;//Compensate for starting position
 		btVector3 newPos(0,0,0);
 		newPos.setX(ogPos.x);
 		newPos.setY(ogPos.y);
@@ -212,8 +223,8 @@ void main(int argc, char *argv[])
 
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
-		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
-		graphicsManager.GetRootSceneNode()->getChild("brushSN")->setOrientation(q);
+		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q * qY);
+		graphicsManager.GetRootSceneNode()->getChild("brushSN")->setOrientation(q * qY);
 
 		//Haptic forces from Bullet
 		btVector3 force = -paint.getForceDirection();

@@ -91,7 +91,7 @@ void GraphicsManager::loadCanvasObject(string fileName, float scale, Vector3 pos
 	rsCanvas = Root::getSingleton().getRenderSystem();
 	colours = new RGBA[wo.mVertexCount];
 	for(int i = 0; i < wo.mVertexCount; i++)
-		rsCanvas->convertColourValue(ColourValue(.1, .9, .1), colours + i);
+		rsCanvas->convertColourValue(ColourValue(1, 1, 1), colours + i);
 
 	//assign faces based on node indexes
 	unsigned short *faces = new unsigned short[wo.mTriCount * 3];
