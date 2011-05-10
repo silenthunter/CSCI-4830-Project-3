@@ -159,7 +159,7 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     <ClCompile Include="Painter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Material.material" />
+    <None Include="Materials.material" />
     <None Include="plugins.cfg" />
     <None Include="resources.cfg" />
   </ItemGroup>

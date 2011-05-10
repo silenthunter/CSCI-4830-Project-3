@@ -20,7 +20,7 @@ void GraphicsManager::init()
 	string resourcesFile = "resources.cfg";
 
 	root = new Ogre::Root(pluginsFile, configFile, logFile);
-	root->setRenderSystem(root->getRenderSystemByName("OpenGL Rendering Subsystem"));
+	root->setRenderSystem(root->getRenderSystemByName("Direct3D9 Rendering Subsystem"));
 	root->initialise(false);
 
 	ConfigFile cf;
@@ -179,7 +179,7 @@ Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 	nvpl["parentWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 	nvpl["externalWindowHandle"] = Ogre::StringConverter::toString((size_t)NULL);
 
-	window = root->createRenderWindow(name, 0, 0, false, &nvpl);
+	window = root->createRenderWindow(name, 1920, 1080, true, &nvpl);
 	window->setVisible(true);
 	if(render_windows.size() == 0)
 		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
@@ -187,7 +187,7 @@ Ogre::RenderWindow* GraphicsManager::GetWindow(string name)
 	render_windows[name] = window;
 	window->setDeactivateOnFocusChange(false);
 
-	window->resize(800,600);
+	//window->resize(800,600);
 
 	return window;
 }
@@ -443,11 +443,36 @@ void GraphicsManager::applyPaint(Painter &paint)
 
 void GraphicsManager::createBackground()
 {
-	Entity *background = manager->createEntity("Background", "Block.mesh");
+	
+	/*Entity *background = manager->createEntity("BackgroundEnt", "Block.mesh");
 	background->setMaterialName("BackgroundMat");
 	SceneNode *sn = root_sn->createChildSceneNode("BgScene");
 	sn->scale(100, 100, 100);
-	sn->attachObject(background);
+	sn->attachObject(background);*/
+	
+	// Create background material
+	MaterialPtr material = MaterialManager::getSingleton().create("Background", "General");
+	material->getTechnique(0)->getPass(0)->createTextureUnitState("BackgroundPattern.jpg");
+	material->getTechnique(0)->getPass(0)->setDepthCheckEnabled(false);
+	material->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+	material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+
+	// Create background rectangle covering the whole screen
+	Rectangle2D* rect = new Rectangle2D(true);
+	rect->setCorners(-1.0, 1.0, 1.0, -1.0);
+	rect->setMaterial("Background");
+
+	// Render the background before everything else
+	rect->setRenderQueueGroup(RENDER_QUEUE_BACKGROUND);
+
+	// Use infinite AAB to always stay visible
+	AxisAlignedBox aabInf;
+	aabInf.setInfinite();
+	rect->setBoundingBox(aabInf);
+
+	// Attach background to the scene
+	SceneNode* node = manager->getRootSceneNode()->createChildSceneNode("Background");
+	node->attachObject(rect);
 }
 
 void GraphicsManager::updateBrushColor(float R, float G, float B)

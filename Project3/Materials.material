@@ -7,7 +7,22 @@ material BackgroundMat
 			cull_hardware none
 			texture_unit
 			{
-				texture MRAMOR6X6.jpg
+				texture BackgroundPattern.jpg
+			}
+		}
+	}
+}
+
+material Material
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			texture_unit
+			{
+				texture BackgroundPattern.jpg
 			}
 		}
 	}

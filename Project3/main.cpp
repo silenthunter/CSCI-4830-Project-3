@@ -123,7 +123,7 @@ void main(int argc, char *argv[])
 		#endif
 
 		graphicsManager.applyPaint(paint);
-		//dbgdraw->step();
+		dbgdraw->step();
 
 		m_Keyboard->capture();
 
@@ -162,10 +162,8 @@ void main(int argc, char *argv[])
 
 		Vector3 ogPos(pos[0], pos[1], pos[2]);
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
-		Quaternion qY(Degree(rotationY), Vector3::UNIT_X);
 		ogPos *= NovintScale;
 		ogPos = q.Inverse() * ogPos;
-		ogPos = qY.Inverse() * ogPos;
 		pos[0] = ogPos.x;
 		pos[1] = ogPos.y;
 		pos[2] = ogPos.z;
@@ -173,12 +171,8 @@ void main(int argc, char *argv[])
 		#else
 		
 		Vector3 ogPos(pos.x(), pos.y(), pos.z());
-		ogPos.y -= 5;//Compensate for starting position
 		Quaternion q(Degree(rotation), Vector3::UNIT_Y);
-		Quaternion qY(Degree(rotationY), Vector3::UNIT_X);
 		ogPos = q.Inverse() * ogPos;
-		ogPos = qY.Inverse() * ogPos;
-		ogPos.y += 5;//Compensate for starting position
 		btVector3 newPos(0,0,0);
 		newPos.setX(ogPos.x);
 		newPos.setY(ogPos.y);
@@ -189,13 +183,15 @@ void main(int argc, char *argv[])
 
 		paint.update(elapsed);
 		graphicsManager.updateOgreMeshFromBulletMesh(paint);
-		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q * qY);
-		graphicsManager.GetRootSceneNode()->getChild("brushSN")->setOrientation(q * qY);
+		graphicsManager.GetRootSceneNode()->getChild("ObjectScene")->setOrientation(q);
+		graphicsManager.GetRootSceneNode()->getChild("brushSN")->setOrientation(q);
 
 		//Haptic forces from Bullet
 		btVector3 force = -paint.getForceDirection();
 		Vector3 forceOgre(force.x(), force.y(), force.z());
-		double forceMag = forceOgre.length() / 10000 * (paint.isContacting() ? 5.5 : 3);//log(forceOgre.length()) * 100;
+		double forceMag = forceOgre.length() / 10000 * (paint.isContacting() ? 10.5 : 3);//log(forceOgre.length()) * 100;
+
+		if(!paint.isContacting()) paint.resetBrush();
 
 		/*double diff = forceMag - lastForceMag;
 		forceMag = lastForceMag + diff * .01;

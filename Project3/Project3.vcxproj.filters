@@ -169,7 +169,7 @@
     <None Include="resources.cfg">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Material.material">
+    <None Include="Materials.material">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

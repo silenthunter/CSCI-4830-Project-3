@@ -94,13 +94,7 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 	{
 		brush = btSoftBodyHelpers::CreateFromTriMesh(worldInfo, wo.mVertices, wo.mIndices, wo.mTriCount);
 
-		brush->generateBendingConstraints(2);
-		brush->generateClusters(64);
-		brush->getCollisionShape()->setMargin(.1);
-		brush->setDeactivationTime(DISABLE_DEACTIVATION);
-		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
-
-		//brush->m_cfg.kDP = .1;
+		brush->m_cfg.kDP = .1;
 		brush->m_cfg.kCHR = 0;
 		brush->m_cfg.piterations = 5;
 
@@ -114,6 +108,12 @@ void Painter::loadObj(const char* fileName, btVector3 &position, btScalar scalin
 		{
 			brush->appendLink(i, brush->m_nodes.size() - 1, mt);
 		}
+
+		brush->generateBendingConstraints(2);
+		brush->generateClusters(64);
+		brush->getCollisionShape()->setMargin(.1);
+		brush->setDeactivationTime(DISABLE_DEACTIVATION);
+		brush->m_cfg.collisions = btSoftBody::fCollision::SDF_RS;
 
 		dynamicsWorld->addSoftBody(brush);
 
