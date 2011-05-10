@@ -298,7 +298,7 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
 	RenderSystem* rs = Root::getSingleton().getRenderSystem();
 	brushColours = new RGBA[bulletBody->m_nodes.size() - 1];
 	for(int i = 0; i < bulletBody->m_nodes.size() - 1; i++)
-		rs->convertColourValue(ColourValue(.1, .9, .1), brushColours + i);
+		rs->convertColourValue(ColourValue(0, 0, 1), brushColours + i);
 
 	//assign faces based on node indexes
 	unsigned short *faces = new unsigned short[bulletBody->m_faces.size() * 3];
@@ -434,7 +434,8 @@ void GraphicsManager::applyPaint(Painter &paint)
 	{
 		if(itr->triangleIndex < 0 || itr->triangleIndex > numIndices * 3) continue; //Error Check
 		int idx = itr->triangleIndex;
-		rsCanvas->convertColourValue(ColourValue(1, 0, 0), colours + indices[idx * 3]);
+		//rsCanvas->convertColourValue(ColourValue(*brushColours), colours + indices[idx * 3]);
+		colours[indices[idx * 3]] = *brushColours;
 	}
 
 	vbufColor->writeData(0, vbufColor->getSizeInBytes(), colours, true);

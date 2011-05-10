@@ -142,6 +142,7 @@ void main(int argc, char *argv[])
 			//Convert gkb.gc from a 0 - 255 scale to a 0 - 1 scale by dividing all member variables (r, g, and b) by 255.f
 			//Send gkb.gc to the paint brush
 			graphicsManager.updateBrushColor(gkb.gc.r / 255.f, gkb.gc.g / 255.f, gkb.gc.b / 255.f);
+			gkb.resetColor();
 		}
 		if(m_Keyboard->isKeyDown(OIS::KC_SPACE))
 			paint.resetBrush();

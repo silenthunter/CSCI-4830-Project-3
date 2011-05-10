@@ -60,21 +60,21 @@ bool GameKeyboard::handleColorInput()
 	{
 		if(pressKey(kc) == false) return false;
 		cBool = 0;
-		gc.r = 0;
+		gc.r = -1;
 	}
 	else if(m_Keyboard->isKeyDown(OIS::KC_G))
 	{
 		kc = OIS::KC_G;
 		if(pressKey(kc) == false) return false;
 		cBool = 1;
-		gc.g = 0;
+		gc.g = -1;
 	}
 	else if(m_Keyboard->isKeyDown(OIS::KC_B))
 	{
 		kc = OIS::KC_B;
 		if(pressKey(kc) == false) return false;
 		cBool = 2;
-		gc.b = 0;
+		gc.b = -1;
 	}
 	else
 	{
@@ -144,6 +144,9 @@ bool GameKeyboard::handleColorInput()
 			kc = OIS::KC_LSHIFT;
 			if(pressKey(kc) == false) return false;
 			if(checkColorValue() == false) return false;
+			if(gc.r == -1) gc.r = 0;
+			if(gc.g == -1) gc.g = 0;
+			if(gc.b == -1) gc.b = 0;
 			return true;
 		}
 		
@@ -154,34 +157,34 @@ bool GameKeyboard::handleColorInput()
 
 void GameKeyboard::resetColor()
 {
-	gc.r = 0;
-	gc.g = 0;
-	gc.b = 0;
+	gc.r = -1;
+	gc.g = -1;
+	gc.b = -1;
 }
 
 bool GameKeyboard::checkColorValue()
 {
 	if(cBool == 0)
 	{
-		if(gc.r > 255)
+		if(gc.r > 255 || gc.r == -1)
 		{
-			gc.r = 0;
+			gc.r = -1;
 			return false;
 		}
 	}
 	else if(cBool == 1)
 	{
-		if(gc.g > 255)
+		if(gc.g > 255 || gc.g == -1)
 		{
-			gc.g = 0;
+			gc.g = -1;
 			return false;
 		}
 	}
 	else if(cBool == 2)
 	{
-		if(gc.b > 255)
+		if(gc.b > 255 || gc.b == -1)
 		{
-			gc.b = 0;
+			gc.b = -1;
 			return false;
 		}
 	}
@@ -192,21 +195,21 @@ bool GameKeyboard::checkIfZero()
 {
 	if(cBool == 0)
 	{
-		if(gc.r == 0)
+		if(gc.r <= 0)
 		{
 			return true;
 		}
 	}
 	else if(cBool == 1)
 	{
-		if(gc.g == 0)
+		if(gc.g <= 0)
 		{
 			return true;
 		}
 	}
 	else if(cBool == 2)
 	{
-		if(gc.b == 0)
+		if(gc.b <= 0)
 		{
 			return true;
 		}
@@ -218,24 +221,27 @@ void GameKeyboard::addColorValue(int newInput)
 {
 	if(cBool == 0)
 	{
-		if(gc.r == 0)
+		if(gc.r != 0)
 		{
+			if(gc.r == -1) gc.r = 0;
 			gc.r *= 10;
 			gc.r += newInput;
 		}
 	}
 	else if(cBool == 1)
 	{
-		if(gc.g == 0)
+		if(gc.g != 0)
 		{
+			if(gc.g == -1) gc.g = 0;
 			gc.g *= 10;
 			gc.g += newInput;
 		}
 	}
 	else if(cBool == 2)
 	{
-		if(gc.b == 0)
+		if(gc.b != 0)
 		{
+			if(gc.b == -1) gc.b = 0;
 			gc.b *= 10;
 			gc.b += newInput;
 		}

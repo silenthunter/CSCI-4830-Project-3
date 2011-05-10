@@ -19,6 +19,7 @@ public:
 	GameKeyboard();
 	~GameKeyboard();
 	void init(OIS::KeyCode* kArr, int len);
+	void resetColor();
 	void setKeyboard(OIS::Keyboard *m_KB);
 	bool pressKey(OIS::KeyCode kc);
 	void releaseKey(OIS::KeyCode kc);
@@ -31,7 +32,6 @@ public:
 
 private:
 	//Functions
-	void resetColor();
 	bool checkColorValue();
 	bool checkIfZero();
 	void addColorValue(int newInput);
