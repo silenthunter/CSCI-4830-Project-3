@@ -73,7 +73,7 @@ void Painter::update(double elapsed)
 	if(updateCounter++ % 25 == 0)
 	{
 		printf("Average position (%f, %f, %f)\n", xAvg / i, yAvg / i, zAvg / i);
-		printf("FPS : %f\n", 1000 * elapsed);
+		printf("FPS : %f\n", 1 / elapsed);
 
 		if(getCollisions().size() > 0)
 		{

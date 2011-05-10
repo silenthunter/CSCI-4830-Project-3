@@ -40,6 +40,7 @@ private:
 	int numIndices;
 
 	void SetUpCamera();
+	void SetUpLight();
 	Ogre::RenderWindow* GetWindow(string name);
 
 public:

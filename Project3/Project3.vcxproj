@@ -37,18 +37,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
-    <LibraryPath>$(Boost)\lib;.\lib\DebugLib;$(OgreLibDebug);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(OpenALInc);$(IncludePath)</IncludePath>
+    <LibraryPath>$(Boost)\lib;.\lib\DebugLib;$(OgreLibDebug);$(OpenALLib);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
     <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(IncludePath)</IncludePath>
+    <IncludePath>$(OISInc);.\includes;$(OgreInclude);$(Boost);$(BULLETSRC);$(OpenALInc);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(Boost)\lib;.\lib\ReleaseLib;$(OgreLibRelease);$(OpenALLib);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,12 +58,15 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain_d.lib;OIS_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain_d.lib;OIS_d.lib;winmm.lib;OpenAL32.lib;alut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)\dll\DebugDll\" "$(OutDir)"
 copy "$(ProjectDir)\plugins.cfg" "$(OutDir)"
 copy "$(ProjectDir)\resources.cfg" "$(OutDir)"
+copy "$(ProjectDir)\Materials.material" "$(OutDir)"
+copy "$(ProjectDir)\Sound\" "$(OutDir)"
+copy "$(ProjectDir)\Sound\" "$(OutDir)"
 
 mkdir "$(OutDir)\Meshes\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
@@ -86,12 +89,14 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain.lib;OIS.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;hdl.lib;OgreMain.lib;OIS.lib;winmm.lib;OpenAL32.lib;alut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)\dll\ReleaseDll\" "$(OutDir)"
 copy "$(ProjectDir)\plugins_release.cfg" "$(OutDir)"
 copy "$(ProjectDir)\resources.cfg" "$(OutDir)"
+copy "$(ProjectDir)\Materials.material" "$(OutDir)"
+copy "$(ProjectDir)\Sound\" "$(OutDir)"
 
 mkdir "$(OutDir)\Meshes\"
 copy "$(ProjectDir)\Meshes\" "$(OutDir)\Meshes\"
@@ -125,6 +130,7 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="haptics.h" />
+    <ClInclude Include="OpenALSoundSystem.h" />
     <ClInclude Include="Painter.h" />
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +153,7 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     <ClCompile Include="GraphicsManager.cpp" />
     <ClCompile Include="haptics.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenALSoundSystem.cpp" />
     <ClCompile Include="Painter.cpp" />
   </ItemGroup>
   <ItemGroup>

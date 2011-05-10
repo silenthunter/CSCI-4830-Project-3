@@ -43,6 +43,8 @@ void GraphicsManager::init()
 
 	GetWindow("Project 3");
 	SetUpCamera();
+	SetUpLight();
+	createBackground();
 
 	//return root;
 }
@@ -225,6 +227,17 @@ void GraphicsManager::SetUpCamera()
 	player->addChild(c_sn);
 	Ogre::SceneNode *cPitch_sn = c_sn->createChildSceneNode("cameraPitch");
 	cPitch_sn->attachObject(c);
+}
+
+void GraphicsManager::SetUpLight()
+{
+	Ogre::Light* spotLight = manager->createLight("spotLight");
+    spotLight->setType(Ogre::Light::LT_SPOTLIGHT);
+    spotLight->setDiffuseColour(0, 0, 1.0);
+    spotLight->setSpecularColour(0, 0, 1.0);
+	spotLight->setDirection(-1, 0, 0);
+    spotLight->setPosition(Ogre::Vector3(20, 0, 0));
+	spotLight->setSpotlightRange(Ogre::Degree(35), Ogre::Degree(50));
 }
 
 void GraphicsManager::RenderFrame(Ogre::Real timeSinceLastFrame)

@@ -87,6 +87,9 @@
     <ClInclude Include="BtOgrePG.h">
       <Filter>btOgre</Filter>
     </ClInclude>
+    <ClInclude Include="OpenALSoundSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="haptics.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="BtOgre.cpp">
       <Filter>btOgre</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenALSoundSystem.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

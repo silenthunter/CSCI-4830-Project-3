@@ -4,6 +4,7 @@
 #include "GameTimer.h"
 #include "haptics.h"
 #include "Painter.h"
+#include "OpenALSoundSystem.h"
 
 #include "BtOgrePG.h"
 #include "BtOgreGP.h"
@@ -12,6 +13,13 @@
 //#define NOVINT
 
 GraphicsManager graphicsManager;
+OpenALSoundSystem sound;
+
+double soundPos[3] = {0, 0, 0};
+double zeroVel[3] = {0, 0, 0};
+const string ssStr = "SoundSourceString";
+string SoundString = "music.wav";
+
 #ifdef NOVINT
 HapticsClass hap;
 #endif
@@ -111,6 +119,15 @@ void main(int argc, char *argv[])
 	paint.getDynamicsWorld()->setDebugDrawer(dbgdraw);
 
 	graphicsManager.InitBrushFromPainter(paint);
+
+	//Init OpenAL
+	sound.init();
+	#pragma region Set up OpenAL
+	sound.createSound(SoundString, SoundString);
+	sound.createSource(ssStr, zeroVel, zeroVel);
+	sound.assignSourceSound(ssStr, SoundString, 1, 1, 1);
+	sound.playSound(ssStr);
+	#pragma endregion
 
 	//Allow for keyboard control
 	RenderWindow* ogreWindow = graphicsManager.GetWindow();
