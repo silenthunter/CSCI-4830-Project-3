@@ -53,11 +53,12 @@ void GameKeyboard::releaseKey(OIS::KeyCode kc)
 
 bool GameKeyboard::handleColorInput()
 {
+	checkReleaseKeys();
+
 	KeyCode kc = OIS::KC_R;
 	if(m_Keyboard->isKeyDown(OIS::KC_R))
 	{
 		if(pressKey(kc) == false) return false;
-		
 		cBool = 0;
 		gc.r = 0;
 	}
@@ -65,7 +66,6 @@ bool GameKeyboard::handleColorInput()
 	{
 		kc = OIS::KC_G;
 		if(pressKey(kc) == false) return false;
-		
 		cBool = 1;
 		gc.g = 0;
 	}
@@ -73,7 +73,6 @@ bool GameKeyboard::handleColorInput()
 	{
 		kc = OIS::KC_B;
 		if(pressKey(kc) == false) return false;
-		
 		cBool = 2;
 		gc.b = 0;
 	}
@@ -243,13 +242,11 @@ void GameKeyboard::addColorValue(int newInput)
 	}
 }
 
-void checkReleaseKeys()
+void GameKeyboard::checkReleaseKeys()
 {
 	KeyBoolMap::iterator iter;
-	/*
-	for(iter = KBM.begin(); iter < KBM.end(); ++iter)
+	for(iter = KBM.begin(); iter != KBM.end(); ++iter)
 	{
-
+		releaseKey(iter->first);
 	}
-	*/
 }
