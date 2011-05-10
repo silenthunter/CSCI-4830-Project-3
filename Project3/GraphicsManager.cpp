@@ -282,6 +282,7 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
 
 	btSoftBody* bulletBody = paint.brush;
 	float *vertices = new float[(bulletBody->m_nodes.size() - 1) * 6];//3 floats for each vertices and 3 for its normal
+	brushIndices = bulletBody->m_nodes.size() - 1;
 
 	//Get all vertices and their normals
 	for(int i = 0; i < bulletBody->m_nodes.size() - 1; i++)
@@ -295,9 +296,9 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
 	}
 
 	RenderSystem* rs = Root::getSingleton().getRenderSystem();
-	RGBA *colours = new RGBA[bulletBody->m_nodes.size() - 1];
+	brushColours = new RGBA[bulletBody->m_nodes.size() - 1];
 	for(int i = 0; i < bulletBody->m_nodes.size() - 1; i++)
-		rs->convertColourValue(ColourValue(.1, .9, .1), colours + i);
+		rs->convertColourValue(ColourValue(.1, .9, .1), brushColours + i);
 
 	//assign faces based on node indexes
 	unsigned short *faces = new unsigned short[bulletBody->m_faces.size() * 3];
@@ -342,10 +343,10 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
     offset += VertexElement::getTypeSize(VET_COLOUR);
     /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
     /// and bytes per vertex (offset)
-    vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-        offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    vbufBrush = HardwareBufferManager::getSingleton().createVertexBuffer(
+        offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_WRITE_ONLY);
     /// Upload the vertex data to the card
-    vbuf->writeData(0, vbuf->getSizeInBytes(), colours, true);
+    vbufBrush->writeData(0, vbufBrush->getSizeInBytes(), brushColours, true);
 
     /// Set vertex buffer binding so buffer 1 is bound to our colour buffer
     bind->setBinding(1, vbuf);
@@ -446,4 +447,12 @@ void GraphicsManager::createBackground()
 	SceneNode *sn = root_sn->createChildSceneNode("BgScene");
 	sn->scale(100, 100, 100);
 	sn->attachObject(background);
+}
+
+void GraphicsManager::updateBrushColor(float R, float G, float B)
+{
+	for(int i = 0; i < brushIndices; i++)
+		rsCanvas->convertColourValue(ColourValue(R, G, B), brushColours + i);
+	
+	vbufBrush->writeData(0, vbufBrush->getSizeInBytes(), brushColours, true);
 }

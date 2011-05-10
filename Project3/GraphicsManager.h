@@ -35,9 +35,12 @@ private:
 	int *UVindices;
 	Vector2 *UVs;
 	HardwareVertexBufferSharedPtr vbufColor;
+	HardwareVertexBufferSharedPtr vbufBrush;
 	RenderSystem* rsCanvas;
 	RGBA *colours;
+	RGBA *brushColours;
 	int numIndices;
+	int brushIndices;
 
 	void SetUpCamera();
 	void SetUpLight();
@@ -58,6 +61,8 @@ public:
 	void applyPaint(Painter &paint);
 	void loadCanvasObject(string fileName, float scale, Vector3 position);
 	Vector3 GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p);
+	void updateBrushColor(int R, int G, int B);
+	void recolorBrush();
 
 	HardwareVertexBufferSharedPtr vbuf;
 };
