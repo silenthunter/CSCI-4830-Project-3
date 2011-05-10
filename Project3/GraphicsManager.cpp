@@ -349,7 +349,7 @@ void GraphicsManager::InitBrushFromPainter(Painter &paint)
     vbufBrush->writeData(0, vbufBrush->getSizeInBytes(), brushColours, true);
 
     /// Set vertex buffer binding so buffer 1 is bound to our colour buffer
-    bind->setBinding(1, vbuf);
+    bind->setBinding(1, vbufBrush);
 
     /// Allocate index buffer of the requested number of vertices (ibufCount) 
     HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().

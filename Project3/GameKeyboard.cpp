@@ -32,20 +32,23 @@ void GameKeyboard::setKeyboard(OIS::Keyboard *m_KB)
 }
 
 //Check whether or not the state of the key is pressed. If so change it
-void GameKeyboard::pressKey(OIS::KeyCode kc)
+bool GameKeyboard::pressKey(OIS::KeyCode kc)
 {
-	KBM[kc] = true;
-}
-
-//Check whether or not the state of the key is released. If so change it
-bool GameKeyboard::releaseKey(OIS::KeyCode kc)
-{
-	if(KBM[kc] == true)
+	if(!KBM[kc])
 	{
-		KBM[kc] = false;
+		KBM[kc] = true;
 		return true;
 	}
 	return false;
+}
+
+//Check whether or not the state of the key is released. If so change it
+void GameKeyboard::releaseKey(OIS::KeyCode kc)
+{
+	if(!(m_Keyboard->isKeyDown(kc)))
+	{
+		KBM[kc] = false;
+	}
 }
 
 bool GameKeyboard::handleColorInput()
@@ -53,24 +56,24 @@ bool GameKeyboard::handleColorInput()
 	KeyCode kc = OIS::KC_R;
 	if(m_Keyboard->isKeyDown(OIS::KC_R))
 	{
-		if(releaseKey(kc) == false) return false;
-		pressKey(kc);
+		if(pressKey(kc) == false) return false;
+		
 		cBool = 0;
 		gc.r = 0;
 	}
 	else if(m_Keyboard->isKeyDown(OIS::KC_G))
 	{
 		kc = OIS::KC_G;
-		if(releaseKey(kc) == false) return false;
-		pressKey(kc);
+		if(pressKey(kc) == false) return false;
+		
 		cBool = 1;
 		gc.g = 0;
 	}
 	else if(m_Keyboard->isKeyDown(OIS::KC_B))
 	{
 		kc = OIS::KC_B;
-		if(releaseKey(kc) == false) return false;
-		pressKey(kc);
+		if(pressKey(kc) == false) return false;
+		
 		cBool = 2;
 		gc.b = 0;
 	}
@@ -80,76 +83,67 @@ bool GameKeyboard::handleColorInput()
 		{
 			kc = OIS::KC_0;
 			if(checkIfZero() == true) return false;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(0);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_1))
 		{
 			kc = OIS::KC_1;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(1);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_2))
 		{
 			kc = OIS::KC_2;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(2);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_3))
 		{
 			kc = OIS::KC_3;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(3);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_4))
 		{
 			kc = OIS::KC_4;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(4);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_5))
 		{
 			kc = OIS::KC_5;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(5);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_6))
 		{
 			kc = OIS::KC_6;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(6);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_7))
 		{
 			kc = OIS::KC_7;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(7);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_8))
 		{
 			kc = OIS::KC_8;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(8);
 		}
 		else if(m_Keyboard->isKeyDown(OIS::KC_9))
 		{
 			kc = OIS::KC_9;
-			if(releaseKey(kc) == false) return false;
-			pressKey(kc);
+			if(pressKey(kc) == false) return false;
 			addColorValue(9);
 		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_RETURN))
+		else if(m_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 		{
-			kc = OIS::KC_RETURN;
+			kc = OIS::KC_LSHIFT;
+			if(pressKey(kc) == false) return false;
 			if(checkColorValue() == false) return false;
 			return true;
 		}
@@ -247,4 +241,15 @@ void GameKeyboard::addColorValue(int newInput)
 			gc.b += newInput;
 		}
 	}
+}
+
+void checkReleaseKeys()
+{
+	KeyBoolMap::iterator iter;
+	/*
+	for(iter = KBM.begin(); iter < KBM.end(); ++iter)
+	{
+
+	}
+	*/
 }

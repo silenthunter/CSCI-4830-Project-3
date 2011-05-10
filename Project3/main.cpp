@@ -39,7 +39,7 @@ void GKBColorInputMap()
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_7, false));
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_8, false));
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_9, false));
-	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_RETURN, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_LSHIFT, false));
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_R, false));
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_G, false));
 	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_B, false));
@@ -137,11 +137,11 @@ void main(int argc, char *argv[])
 		if(m_Keyboard->isKeyDown(OIS::KC_D))
 			pos.setX(pos.x() + speed * elapsed);
 #endif
-		if(m_Keyboard->isKeyDown(OIS::KC_Q))
 		if(gkb.handleColorInput() == true)
 		{
 			//Convert gkb.gc from a 0 - 255 scale to a 0 - 1 scale by dividing all member variables (r, g, and b) by 255.f
 			//Send gkb.gc to the paint brush
+			graphicsManager.updateBrushColor(gkb.gc.r / 255.f, gkb.gc.g / 255.f, gkb.gc.b / 255.f);
 		}
 		if(m_Keyboard->isKeyDown(OIS::KC_SPACE))
 			paint.resetBrush();
@@ -151,10 +151,6 @@ void main(int argc, char *argv[])
 			rotation += 60 * elapsed;
 		if(m_Keyboard->isKeyDown(OIS::KC_Q))
 			rotation -= 60 * elapsed;
-		if(m_Keyboard->isKeyDown(OIS::KC_R))
-			rotationY += 60 * elapsed;
-		if(m_Keyboard->isKeyDown(OIS::KC_F))
-			rotationY -= 60 * elapsed;
 
 		#ifdef NOVINT
 		//update brush and sync

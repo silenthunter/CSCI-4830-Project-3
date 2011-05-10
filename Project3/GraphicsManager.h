@@ -63,6 +63,7 @@ public:
 	Vector3 GetBaryCentricCoords(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p);
 	void updateBrushColor(int R, int G, int B);
 	void recolorBrush();
+	void updateBrushColor(float R, float G, float B);
 
 	HardwareVertexBufferSharedPtr vbuf;
 };
