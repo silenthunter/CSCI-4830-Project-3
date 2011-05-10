@@ -127,6 +127,7 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     <ClInclude Include="ConvexDecomposition\raytri.h" />
     <ClInclude Include="ConvexDecomposition\splitplane.h" />
     <ClInclude Include="ConvexDecomposition\vlookup.h" />
+    <ClInclude Include="GameKeyboard.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="haptics.h" />
@@ -149,6 +150,7 @@ copy "$(ProjectDir)\Textures\" "$(OutDir)\Textures\"</Command>
     <ClCompile Include="ConvexDecomposition\raytri.cpp" />
     <ClCompile Include="ConvexDecomposition\splitplane.cpp" />
     <ClCompile Include="ConvexDecomposition\vlookup.cpp" />
+    <ClCompile Include="GameKeyboard.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GraphicsManager.cpp" />
     <ClCompile Include="haptics.cpp" />

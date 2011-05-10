@@ -90,6 +90,9 @@
     <ClInclude Include="OpenALSoundSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameKeyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="haptics.cpp">
@@ -153,6 +156,9 @@
       <Filter>btOgre</Filter>
     </ClCompile>
     <ClCompile Include="OpenALSoundSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameKeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

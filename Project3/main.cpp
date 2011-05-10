@@ -5,6 +5,7 @@
 #include "haptics.h"
 #include "Painter.h"
 #include "OpenALSoundSystem.h"
+#include "GameKeyboard.h"
 
 #include "BtOgrePG.h"
 #include "BtOgreGP.h"
@@ -14,6 +15,7 @@
 
 GraphicsManager graphicsManager;
 OpenALSoundSystem sound;
+GameKeyboard gkb;
 
 double soundPos[3] = {0, 0, 0};
 double zeroVel[3] = {0, 0, 0};
@@ -24,78 +26,23 @@ string SoundString = "music.wav";
 HapticsClass hap;
 #endif
 
-bool colorInput(OIS::Keyboard *m_Keyboard, int *cValue, int cBool)
+//Insert 0 - 9, R, G, B, and Enter into the unordered_map
+void GKBColorInputMap()
 {
-	if(m_Keyboard->isKeyDown(OIS::KC_R))
-	{
-		cBool = 0;
-		(*cValue) = 0;
-	}
-	else if(m_Keyboard->isKeyDown(OIS::KC_G))
-	{
-		cBool = 1;
-		(*cValue) = 0;
-	}
-	else if(m_Keyboard->isKeyDown(OIS::KC_B))
-	{
-		cBool = 2;
-		(*cValue) = 0;
-	}
-	else
-	{
-		(*cValue) *= 10;
-		if(m_Keyboard->isKeyDown(OIS::KC_1))
-		{
-			(*cValue) += 1;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_2))
-		{
-			(*cValue) += 2;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_3))
-		{
-			(*cValue) += 3;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_4))
-		{
-			(*cValue) += 4;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_5))
-		{
-			(*cValue) += 5;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_6))
-		{
-			(*cValue) += 6;	
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_7))
-		{
-			(*cValue) += 7;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_8))
-		{
-			(*cValue) += 8;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_9))
-		{
-			(*cValue) += 9;
-		}
-		else if(m_Keyboard->isKeyDown(OIS::KC_RETURN))
-		{
-			if((*cValue) > 255)
-			{
-				(*cValue) = 0;
-				return false;
-			}
-			return true;
-		}
-		else
-		{
-			(*cValue) = 0;
-		}
-	}
-	if((*cValue) > 255) (*cValue) = 0;
-	return false;
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_0, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_1, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_2, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_3, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_4, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_5, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_6, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_7, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_8, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_9, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_RETURN, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_R, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_G, false));
+	gkb.KBM.insert(KeyBoolMap::value_type(OIS::KC_B, false));
 }
 
 void main(int argc, char *argv[])
@@ -120,9 +67,8 @@ void main(int argc, char *argv[])
 
 	graphicsManager.InitBrushFromPainter(paint);
 
-	//Init OpenAL
-	sound.init();
 	#pragma region Set up OpenAL
+	sound.init();
 	sound.createSound(SoundString, SoundString);
 	sound.createSource(ssStr, zeroVel, zeroVel);
 	sound.assignSourceSound(ssStr, SoundString, 1, 1, 1);
@@ -136,6 +82,11 @@ void main(int argc, char *argv[])
 	OIS::InputManager *m_InputManager = OIS::InputManager::createInputSystem(hWnd);
 	OIS::Keyboard *m_Keyboard = static_cast<OIS::Keyboard*>(m_InputManager->createInputObject(OIS::OISKeyboard, false));
 	char *keyStates = new char[512];
+
+	#pragma region Set up GameKeyboard
+	GKBColorInputMap(); //Insert color input keys
+	gkb.setKeyboard(m_Keyboard);
+	#pragma endregion
 
 	#ifdef NOVINT
 	hap.synchFromServo();
@@ -187,9 +138,10 @@ void main(int argc, char *argv[])
 			pos.setX(pos.x() + speed * elapsed);
 #endif
 		if(m_Keyboard->isKeyDown(OIS::KC_Q))
-		if(colorInput(m_Keyboard, &cValue, cBool) == true)
+		if(gkb.handleColorInput() == true)
 		{
-			//Feed (*cValue) in here to a color according to cBool
+			//Convert gkb.gc from a 0 - 255 scale to a 0 - 1 scale by dividing all member variables (r, g, and b) by 255.f
+			//Send gkb.gc to the paint brush
 		}
 		if(m_Keyboard->isKeyDown(OIS::KC_SPACE))
 			paint.resetBrush();
