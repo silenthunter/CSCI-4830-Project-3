@@ -18,3 +18,35 @@ Group Members
 * Teng Lu
 * Jeremy Atkins
 * Ashley Edwards
+
+Key Bindings
+------------
+Q and E - Rotation
+WASD - Movement of the ball when NOVINT is not defined
+Space - Resets the shape of the brush. Useful for when it decides to invert
+
+Changing Brush Color
+--------------------
+1. Press 'R', 'G', or 'B' on the keyboard
+2. Enter a value between 0 and 255
+3. Repeat steps 1 and 2 as desired
+4. Hit left shift
+
+Example:
+r 100 g 200 b 75 LSHIFT
+
+"Quirks"
+--------
+-The Novint Falcon and our physics code really do not interact well. Unless you maneuver it just right, the Falcon tends to kick after prolonged contact with a shape.
+-Sometimes weird areas of the target shape are colored. This is infrequent and likely caused by the ray test performed to get the contact triangle.
+
+Required Environmental Variables and Example paths
+---------------------------------------------
+Boost=D:\Ogre3d\OgreSDK_vc10_v1-7-2\boost_1_42\
+BULLETSRC=D:\Bullet-2.77\src\
+OgreInclude=D:\Ogre3d\OgreSDK_vc10_v1-7-2\include\OGRE\
+OgreLibDebug=D:\Ogre3d\OgreSDK_vc10_v1-7-2\lib\debug\
+OgreLibRelease=D:\Ogre3d\OgreSDK_vc10_v1-7-2\lib\release\
+OISInc=D:\Ogre3d\OgreSDK_vc10_v1-7-2\include\OIS\
+OpenALInc=D:\OpenAL 1.1 SDK\include
+OpenALLib=D:\OpenAL 1.1 SDK\libs\Win32\
